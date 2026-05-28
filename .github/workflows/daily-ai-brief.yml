@@ -15,10 +15,11 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
       - run: cp sources.example.yaml sources.yaml
+      - run: mkdir -p briefs
       - run: echo "简报生成功能开发中" > briefs/test.txt
       - run: |
           git config user.name "AI Bot"
           git config user.email "bot@aid.local"
           git add briefs/
-          git diff --cached --quiet || git commit -m "test"
+          git diff --cached --quiet || git commit -m "test brief"
           git push
