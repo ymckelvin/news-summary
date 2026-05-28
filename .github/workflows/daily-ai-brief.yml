@@ -16,10 +16,13 @@ jobs:
       - run: pip install -r requirements.txt
       - run: cp sources.example.yaml sources.yaml
       - run: mkdir -p briefs
-      - run: echo "简报生成功能开发中" > briefs/test.txt
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+        run: python -m src.aid_runner
       - run: |
           git config user.name "AI Bot"
           git config user.email "bot@aid.local"
           git add briefs/
-          git diff --cached --quiet || git commit -m "test brief"
+          git diff --cached --quiet || git commit -m "Daily brief $(date +%Y-%m-%d)"
           git push
