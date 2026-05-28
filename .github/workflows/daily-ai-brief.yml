@@ -1,0 +1,24 @@
+name: Daily AI Brief
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch-and-brief:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: cp sources.example.yaml sources.yaml
+      - run: echo "简报生成功能开发中" > briefs/test.txt
+      - run: |
+          git config user.name "AI Bot"
+          git config user.email "bot@aid.local"
+          git add briefs/
+          git diff --cached --quiet || git commit -m "test"
+          git push

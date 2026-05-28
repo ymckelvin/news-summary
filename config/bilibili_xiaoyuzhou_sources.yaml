@@ -1,0 +1,123 @@
+bilibili_sources:
+  - name: "GAGATalk"
+    uid: "493081876"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/493081876"
+    ai_subfield: application
+    content_type: interview
+  - name: "全球宏观速递"
+    uid: "522649085"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/522649085"
+    ai_subfield: business
+    content_type: interview
+  - name: "彼岸天空之城"
+    uid: "280780745"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/280780745"
+    ai_subfield: business
+    content_type: interview
+  - name: "硅谷101"
+    uid: "478642438"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/478642438"
+    ai_subfield: business
+    content_type: interview
+  - name: "张小珺Jùn｜商业访谈录"
+    uid: "2161614"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/2161614"
+    ai_subfield: business
+    content_type: interview
+  - name: "罗永浩的十字路口"
+    uid: "237029497"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/237029497"
+    ai_subfield: business
+    content_type: interview
+  - name: "Genji是真想教会你"
+    uid: "390234906"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/390234906"
+    ai_subfield: tools
+    content_type: tech_share
+  - name: "跟李沐学AI"
+    uid: "1609776584"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/1609776584"
+    ai_subfield: infrastructure
+    content_type: tech_share
+  - name: "老麦的工具库"
+    uid: "478648878"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/478648878"
+    ai_subfield: tools
+    content_type: tech_share
+  - name: "AI研究室-帆哥"
+    uid: "508452265"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/508452265"
+    ai_subfield: application
+    content_type: tech_share
+  - name: "同济子豪兄"
+    uid: "544241270"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/544241270"
+    ai_subfield: application
+    content_type: tech_share
+  - name: "图灵的猫"
+    uid: "497042226"
+    rsshub_url: "https://rsshub.app/bilibili/user/video/497042226"
+    ai_subfield: application
+    content_type: tech_share
+
+xiaoyuzhou_sources:
+  - name: "AI Odyssey"
+    rss_url: ""
+    ai_subfield: application
+    content_type: interview
+    priority: P0
+  - name: "AI炼金术"
+    rss_url: ""
+    ai_subfield: application
+    content_type: interview
+    priority: P0
+  - name: "硅谷101"
+    rss_url: ""
+    ai_subfield: business
+    content_type: interview
+    priority: P0
+  - name: "张小珺Jùn｜商业访谈录"
+    rss_url: ""
+    ai_subfield: business
+    content_type: interview
+    priority: P0
+  - name: "技术不无聊"
+    rss_url: ""
+    ai_subfield: application
+    content_type: interview
+    priority: P0
+  - name: "101 Weekly"
+    rss_url: ""
+    ai_subfield: business
+    content_type: opinion
+    priority: P1
+  - name: "AI Next"
+    rss_url: ""
+    ai_subfield: application
+    content_type: interview
+    priority: P1
+  - name: "AI BigBang 大爆炸"
+    rss_url: ""
+    ai_subfield: application
+    content_type: opinion
+    priority: P1
+  - name: "Web3 101"
+    rss_url: ""
+    ai_subfield: business
+    content_type: interview
+    priority: P1
+  - name: "AI的N种可能的个人播客"
+    rss_url: ""
+    ai_subfield: application
+    content_type: opinion
+    priority: P1
+  - name: "AI Talk!"
+    rss_url: ""
+    ai_subfield: application
+    content_type: interview
+    priority: P2
+  - name: "AI人工智能与量化投资的未来"
+    rss_url: ""
+    ai_subfield: application
+    content_type: opinion
+    priority: P2
