@@ -1,6 +1,6 @@
 {
   "date": "2026-05-28",
-  "generated_at": "2026-05-28T11:28:36.270102",
+  "generated_at": "2026-05-28T12:04:38.163328",
   "items": [
     {
       "id": "aid_2026-05-28_ad4e4fdd",
@@ -20,7 +20,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_ad4e4fdd.txt",
-      "briefed_at": "2026-05-28T11:28:36.263183"
+      "briefed_at": "2026-05-28T12:04:38.158451"
     },
     {
       "id": "aid_2026-05-28_9e4d9c03",
@@ -40,7 +40,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_9e4d9c03.txt",
-      "briefed_at": "2026-05-28T11:28:36.263443"
+      "briefed_at": "2026-05-28T12:04:38.158654"
     },
     {
       "id": "aid_2026-05-28_02b3f6b9",
@@ -60,7 +60,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_02b3f6b9.txt",
-      "briefed_at": "2026-05-28T11:28:36.263680"
+      "briefed_at": "2026-05-28T12:04:38.158794"
     },
     {
       "id": "aid_2026-05-28_99f5b3d4",
@@ -80,7 +80,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_99f5b3d4.txt",
-      "briefed_at": "2026-05-28T11:28:36.263859"
+      "briefed_at": "2026-05-28T12:04:38.158920"
     },
     {
       "id": "aid_2026-05-28_6b240184",
@@ -100,7 +100,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_6b240184.txt",
-      "briefed_at": "2026-05-28T11:28:36.264013"
+      "briefed_at": "2026-05-28T12:04:38.159027"
     },
     {
       "id": "aid_2026-05-28_619d6530",
@@ -120,7 +120,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_619d6530.txt",
-      "briefed_at": "2026-05-28T11:28:36.264172"
+      "briefed_at": "2026-05-28T12:04:38.159138"
     },
     {
       "id": "aid_2026-05-28_f29b6a9d",
@@ -140,7 +140,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_f29b6a9d.txt",
-      "briefed_at": "2026-05-28T11:28:36.264325"
+      "briefed_at": "2026-05-28T12:04:38.159264"
     },
     {
       "id": "aid_2026-05-28_7dbd306b",
@@ -160,7 +160,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_7dbd306b.txt",
-      "briefed_at": "2026-05-28T11:28:36.264486"
+      "briefed_at": "2026-05-28T12:04:38.159382"
     },
     {
       "id": "aid_2026-05-28_5301b09c",
@@ -180,27 +180,27 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_5301b09c.txt",
-      "briefed_at": "2026-05-28T11:28:36.264657"
+      "briefed_at": "2026-05-28T12:04:38.159490"
     },
     {
-      "id": "aid_2026-05-28_f05b39c8",
-      "title": "Election information and safeguards in 2026",
-      "summary": "Election information and safeguards in 2026\nAhead of global elections, we’re helping people access information, supporting cyber defenders, and increasing AI transparency\n2026 is the world’s second ma",
+      "id": "aid_2026-05-28_1516b812",
+      "title": "Warp’s big bet on building open source with GPT-5.5",
+      "summary": "Warp’s big bet on building open source with GPT‑5.5\nWarp uses GPT‑5.5 to orchestrate agents across local, cloud, and open-source workflows.\n30%\nFewer tokens per task with GPT-5.5\n90%\nOf internal pull ",
       "source_platform": "rss",
-      "source_url": "https://openai.com/index/election-safeguards-2026",
+      "source_url": "https://openai.com/index/warp",
       "source_name": "OpenAI News",
       "content_type": "tech_share",
       "ai_subfield": "application",
       "speaker_identity": "unknown",
       "speaker_name": "",
       "language": "en",
-      "duration_or_length": "8008",
+      "duration_or_length": "5736",
       "heat_score": "0",
       "tags": [],
       "has_transcript": true,
       "status": "pending",
-      "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_f05b39c8.txt",
-      "briefed_at": "2026-05-28T11:28:36.264805"
+      "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_1516b812.txt",
+      "briefed_at": "2026-05-28T12:04:38.159605"
     },
     {
       "id": "aid_2026-05-28_f7b2a118",
@@ -220,7 +220,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_f7b2a118.txt",
-      "briefed_at": "2026-05-28T11:28:36.264970"
+      "briefed_at": "2026-05-28T12:04:38.159728"
     },
     {
       "id": "aid_2026-05-28_c04b35a4",
@@ -240,7 +240,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_c04b35a4.txt",
-      "briefed_at": "2026-05-28T11:28:36.265112"
+      "briefed_at": "2026-05-28T12:04:38.159837"
     },
     {
       "id": "aid_2026-05-28_85b7d0f2",
@@ -260,7 +260,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_85b7d0f2.txt",
-      "briefed_at": "2026-05-28T11:28:36.265239"
+      "briefed_at": "2026-05-28T12:04:38.159926"
     },
     {
       "id": "aid_2026-05-28_ddad786b",
@@ -280,7 +280,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_ddad786b.txt",
-      "briefed_at": "2026-05-28T11:28:36.265374"
+      "briefed_at": "2026-05-28T12:04:38.160003"
     },
     {
       "id": "aid_2026-05-28_5413a5ca",
@@ -300,7 +300,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_5413a5ca.txt",
-      "briefed_at": "2026-05-28T11:28:36.265540"
+      "briefed_at": "2026-05-28T12:04:38.160087"
     },
     {
       "id": "aid_2026-05-28_b58d6ec7",
@@ -320,7 +320,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_b58d6ec7.txt",
-      "briefed_at": "2026-05-28T11:28:36.265689"
+      "briefed_at": "2026-05-28T12:04:38.160168"
     },
     {
       "id": "aid_2026-05-28_9c5eb2c0",
@@ -340,7 +340,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_9c5eb2c0.txt",
-      "briefed_at": "2026-05-28T11:28:36.265833"
+      "briefed_at": "2026-05-28T12:04:38.160246"
     },
     {
       "id": "aid_2026-05-28_e0acbb27",
@@ -360,7 +360,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_e0acbb27.txt",
-      "briefed_at": "2026-05-28T11:28:36.265982"
+      "briefed_at": "2026-05-28T12:04:38.160327"
     },
     {
       "id": "aid_2026-05-28_ae932588",
@@ -380,7 +380,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_ae932588.txt",
-      "briefed_at": "2026-05-28T11:28:36.266128"
+      "briefed_at": "2026-05-28T12:04:38.160402"
     },
     {
       "id": "aid_2026-05-28_d8f7a353",
@@ -400,7 +400,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_d8f7a353.txt",
-      "briefed_at": "2026-05-28T11:28:36.266275"
+      "briefed_at": "2026-05-28T12:04:38.160483"
     },
     {
       "id": "aid_2026-05-28_81eace4c",
@@ -420,7 +420,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_81eace4c.txt",
-      "briefed_at": "2026-05-28T11:28:36.266402"
+      "briefed_at": "2026-05-28T12:04:38.160589"
     },
     {
       "id": "aid_2026-05-28_867105bb",
@@ -440,7 +440,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_867105bb.txt",
-      "briefed_at": "2026-05-28T11:28:36.266547"
+      "briefed_at": "2026-05-28T12:04:38.160697"
     },
     {
       "id": "aid_2026-05-28_9df58d84",
@@ -460,7 +460,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_9df58d84.txt",
-      "briefed_at": "2026-05-28T11:28:36.266694"
+      "briefed_at": "2026-05-28T12:04:38.160817"
     },
     {
       "id": "aid_2026-05-28_da83edb0",
@@ -480,7 +480,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_da83edb0.txt",
-      "briefed_at": "2026-05-28T11:28:36.266812"
+      "briefed_at": "2026-05-28T12:04:38.160909"
     },
     {
       "id": "aid_2026-05-28_2360640d",
@@ -500,7 +500,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_2360640d.txt",
-      "briefed_at": "2026-05-28T11:28:36.266968"
+      "briefed_at": "2026-05-28T12:04:38.160997"
     },
     {
       "id": "aid_2026-05-28_51afdb02",
@@ -520,7 +520,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_51afdb02.txt",
-      "briefed_at": "2026-05-28T11:28:36.267108"
+      "briefed_at": "2026-05-28T12:04:38.161117"
     },
     {
       "id": "aid_2026-05-28_03467d13",
@@ -540,7 +540,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_03467d13.txt",
-      "briefed_at": "2026-05-28T11:28:36.267265"
+      "briefed_at": "2026-05-28T12:04:38.161228"
     },
     {
       "id": "aid_2026-05-28_eb2f10c0",
@@ -560,7 +560,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_eb2f10c0.txt",
-      "briefed_at": "2026-05-28T11:28:36.267393"
+      "briefed_at": "2026-05-28T12:04:38.161339"
     },
     {
       "id": "aid_2026-05-28_69194283",
@@ -580,7 +580,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_69194283.txt",
-      "briefed_at": "2026-05-28T11:28:36.267533"
+      "briefed_at": "2026-05-28T12:04:38.161433"
     },
     {
       "id": "aid_2026-05-28_613d37a3",
@@ -600,7 +600,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_613d37a3.txt",
-      "briefed_at": "2026-05-28T11:28:36.267663"
+      "briefed_at": "2026-05-28T12:04:38.161540"
     },
     {
       "id": "aid_2026-05-28_1e1d44d1",
@@ -620,7 +620,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_1e1d44d1.txt",
-      "briefed_at": "2026-05-28T11:28:36.267767"
+      "briefed_at": "2026-05-28T12:04:38.161641"
     },
     {
       "id": "aid_2026-05-28_a2584e62",
@@ -640,7 +640,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_a2584e62.txt",
-      "briefed_at": "2026-05-28T11:28:36.267888"
+      "briefed_at": "2026-05-28T12:04:38.161735"
     },
     {
       "id": "aid_2026-05-28_5e117fb1",
@@ -660,7 +660,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_5e117fb1.txt",
-      "briefed_at": "2026-05-28T11:28:36.268025"
+      "briefed_at": "2026-05-28T12:04:38.161840"
     },
     {
       "id": "aid_2026-05-28_aad34406",
@@ -680,7 +680,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_aad34406.txt",
-      "briefed_at": "2026-05-28T11:28:36.268180"
+      "briefed_at": "2026-05-28T12:04:38.161937"
     },
     {
       "id": "aid_2026-05-28_80f152ed",
@@ -700,7 +700,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_80f152ed.txt",
-      "briefed_at": "2026-05-28T11:28:36.268329"
+      "briefed_at": "2026-05-28T12:04:38.162030"
     },
     {
       "id": "aid_2026-05-28_4e15a3e1",
@@ -720,7 +720,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_4e15a3e1.txt",
-      "briefed_at": "2026-05-28T11:28:36.268473"
+      "briefed_at": "2026-05-28T12:04:38.162150"
     },
     {
       "id": "aid_2026-05-28_b472fce4",
@@ -740,7 +740,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_b472fce4.txt",
-      "briefed_at": "2026-05-28T11:28:36.268632"
+      "briefed_at": "2026-05-28T12:04:38.162250"
     },
     {
       "id": "aid_2026-05-28_eb67512d",
@@ -760,7 +760,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_eb67512d.txt",
-      "briefed_at": "2026-05-28T11:28:36.268773"
+      "briefed_at": "2026-05-28T12:04:38.162350"
     },
     {
       "id": "aid_2026-05-28_26860eb2",
@@ -780,7 +780,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_26860eb2.txt",
-      "briefed_at": "2026-05-28T11:28:36.268920"
+      "briefed_at": "2026-05-28T12:04:38.162462"
     },
     {
       "id": "aid_2026-05-28_3523cba9",
@@ -800,7 +800,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_3523cba9.txt",
-      "briefed_at": "2026-05-28T11:28:36.269056"
+      "briefed_at": "2026-05-28T12:04:38.162557"
     },
     {
       "id": "aid_2026-05-28_4f2da983",
@@ -820,7 +820,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_4f2da983.txt",
-      "briefed_at": "2026-05-28T11:28:36.269195"
+      "briefed_at": "2026-05-28T12:04:38.162661"
     },
     {
       "id": "aid_2026-05-28_0465322d",
@@ -840,7 +840,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_0465322d.txt",
-      "briefed_at": "2026-05-28T11:28:36.269334"
+      "briefed_at": "2026-05-28T12:04:38.162759"
     },
     {
       "id": "aid_2026-05-28_dc5d931a",
@@ -860,7 +860,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_dc5d931a.txt",
-      "briefed_at": "2026-05-28T11:28:36.269449"
+      "briefed_at": "2026-05-28T12:04:38.162865"
     },
     {
       "id": "aid_2026-05-28_edb57509",
@@ -880,7 +880,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_edb57509.txt",
-      "briefed_at": "2026-05-28T11:28:36.269601"
+      "briefed_at": "2026-05-28T12:04:38.162970"
     },
     {
       "id": "aid_2026-05-28_c9cdc8de",
@@ -900,7 +900,7 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_c9cdc8de.txt",
-      "briefed_at": "2026-05-28T11:28:36.269721"
+      "briefed_at": "2026-05-28T12:04:38.163060"
     },
     {
       "id": "aid_2026-05-28_e9524823",
@@ -920,27 +920,27 @@
       "has_transcript": true,
       "status": "pending",
       "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_e9524823.txt",
-      "briefed_at": "2026-05-28T11:28:36.269858"
+      "briefed_at": "2026-05-28T12:04:38.163156"
     },
     {
-      "id": "aid_2026-05-28_bbc1c0cb",
-      "title": "[抓取失败]",
-      "summary": "fetch_youtube_transcript() got an unexpected keyword argument 'max_entries'",
+      "id": "aid_2026-05-28_2f93976e",
+      "title": "[配置错误]",
+      "summary": "缺少 SUPADATA_API_KEY 环境变量",
       "source_platform": "youtube_transcript",
       "source_url": "",
-      "source_name": "Latent Space Podcast",
+      "source_name": "",
       "content_type": "interview",
       "ai_subfield": "application",
       "speaker_identity": "unknown",
       "speaker_name": "",
       "language": "zh",
-      "duration_or_length": "75",
+      "duration_or_length": "24",
       "heat_score": "0",
       "tags": [],
       "has_transcript": false,
       "status": "pending",
-      "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_bbc1c0cb.txt",
-      "briefed_at": "2026-05-28T11:28:36.269989"
+      "raw_content_path": "briefs/2026-05-28/raw/aid_2026-05-28_2f93976e.txt",
+      "briefed_at": "2026-05-28T12:04:38.163254"
     }
   ]
 }
