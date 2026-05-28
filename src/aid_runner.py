@@ -43,9 +43,9 @@ def fetch_all():
             if stype == "rss":
                 items.extend(fetch_rss(src.get("url",""), name, max_entries=max_e, fetch_fulltext=src.get("fetch_fulltext", False)))
             elif stype == "youtube":
-                items.extend(fetch_youtube(src.get("url",""), name, max_entries=max_e))
+                items.extend(fetch_youtube(src.get("url",""), name))
             elif stype == "youtube_transcript":
-                items.extend(fetch_youtube_transcript(src.get("url",""), name, max_entries=max_e))
+                items.extend(fetch_youtube_transcript(src.get("url",""), name))
         except Exception as e:
             items.append(RawItem(source_name=name, source_type=stype, title="[抓取失败]", content=str(e), link=src.get("url","")))
     # B站
