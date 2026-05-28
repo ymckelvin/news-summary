@@ -1,0 +1,58 @@
+language: zh
+
+sources:
+  - type: youtube_transcript
+    name: "OpenAI"
+    url: "https://www.youtube.com/@OpenAI"
+    max_entries: 5
+
+  - type: youtube_transcript
+    name: "Anthropic"
+    url: "https://www.youtube.com/@anthropic-ai"
+    max_entries: 5
+
+  - type: youtube_transcript
+    name: "Lenny's Podcast"
+    url: "https://www.youtube.com/@LennysPodcast"
+    max_entries: 5
+
+  - type: youtube_transcript
+    name: "Latent Space"
+    url: "https://www.youtube.com/@LatentSpacePod"
+    max_entries: 5
+
+  - type: youtube_transcript
+    name: "Lex Fridman"
+    url: "https://www.youtube.com/@lexfridman"
+    max_entries: 3
+
+  - type: youtube_transcript
+    name: "Andrej Karpathy"
+    url: "https://www.youtube.com/@AndrejKarpathy"
+    max_entries: 3
+
+  - type: rss
+    name: "Anthropic News"
+    url: "https://raw.githubusercontent.com/Olshansk/rss-feeds/refs/heads/main/feeds/feed_anthropic_news.xml"
+    max_entries: 3
+    fetch_fulltext: true
+
+  - type: rss
+    name: "OpenAI News"
+    url: "https://openai.com/news/rss.xml"
+    max_entries: 3
+    fetch_fulltext: true
+
+  - type: rss
+    name: "GAGATalk (B站)"
+    url: "https://rsshub.app/bilibili/user/video/493081876"
+    max_entries: 3
+
+  - type: rss
+    name: "硅谷101 (B站)"
+    url: "https://rsshub.app/bilibili/user/video/478642438"
+    max_entries: 3
+
+  - type: follow_builders_x
+    name: "AI Builders Twitter"
+    max_entries: 10
