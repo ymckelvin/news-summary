@@ -1,0 +1,102 @@
+Profiling in PyTorch (Part 1): A Beginner's Guide to torch.profiler
+What you cannot profile, you cannot optimize.
+Whether you are trying to squeeze more tokens per second out of a Large Language Model (LLM), shave milliseconds off inference, or just understand why your training loop runs slower than the spec sheet promises, the path eventually runs through profiling.
+The catch is that profiling has a steep on-ramp. The traces are dense walls of colored rectangles. The events carry intimidating names. Most tutorials assume you can already read them. So even when we know we should be profiling, opening a trace can feel like a chore best left for later (or for someone else). This post, and the series it kicks off, is our attempt to lower that on-ramp.
+This is the opening post of Profiling in PyTorch, a series where we slowly build the skill of reading profiler traces and use it to drive optimization. The plan:
+- Part 1 (this post): start with the simplest possible operation, a matrix multiplication followed by a bias add, and learn how to read what the profiler hands back.
+- Part 2: scale up to
+nn.Linear
+and a small MLP, use the traces to motivate optimizations, and peek at thekernels
+underneath. - Part 3: put it all together on Large Language Models with
+transformers
+.
+We document the journey from a beginner's point of view. No prerequisites apart from basic PyTorch. Treat this as a leisurely read with some "Aha!" moments. The structure of the post is intentionally question-led: we open a trace, ask "wait, why is that happening?", and chase the answer until something clicks. By the end you should know:
+- how to set up
+torch.profiler
+and what it actually hands back, - how to read the profiler table and the trace (CPU lane, GPU lane, and the suspicious gaps in between),
+- the chain of events from a Python call all the way down to a CUDA kernel,
+- what changes (and, more interestingly, what does not change) when you slap
+torch.compile
+on top.
+Before we begin, two definitions that will make everything below read better:
+- A GPU kernel is a program that runs in parallel on many threads of the GPU.
+- The CPU schedules and launches these kernels.
+You don't usually have to write GPU kernels yourself; when you use a PyTorch operation, it is automatically translated to one or more kernels that do the job on GPU.
+With those two ideas in your back pocket, let's start asking questions.
+Here is the entire script that we use for the post:
+01_matmul_add.py
+. We recommend opening this script in a separate tab and walk through the code step by step. We use theNVIDIA A100-SXM4-80GB
+GPU to run the scripts.
+The matrix multiplication and addition operation
+As correctly quipped by Dr. Sara Hooker, just as we are primarily made up of water, Deep Neural Networks are primarily made up of matrix multiplies. As fundamental as they are, it would be a shame to start our profiling journey with anything else.
+def fn(x, w, b):
+return torch.add(torch.matmul(x, w), b)
+The matrix addition along with the matrix multiplication mimics how weights and biases interact in a neuron. This addition (pun intended) will help us understand how it paves the way for compilation later in the post.
+To profile, we will be using the torch.profiler
+module. The steps involved are:
+- Have the code to profile ready (here
+def fn
+, which wraps the matrix multiplication and matrix addition) - Annotate the algorithm. While this is completely optional, we recommend doing this. The
+record_function
+annotates our function asmatmul_add
+, which will be easy to navigate in the traces (as we note later)
+def step():
+with torch.profiler.record_function("matmul_add"):
+return fn(x, w, b)
+- Wrap the code with the
+torch.profiler.profile
+context manager
+with torch.profiler.profile(
+activities=[
+torch.profiler.ProfilerActivity.CPU, # the cpu activities
+torch.profiler.ProfilerActivity.CUDA, # the gpu activities
+],
+) as prof:
+# it is recommended to run events multiple times to warm up the GPUs
+for _ in range(5):
+step()
+prof.step()
+- Export the profile
+# the profiler table
+prof.key_averages().table(sort_by="cuda_time_total", row_limit=15)
+# the profiler trace
+prof.export_chrome_trace(trace_path)
+The profiler exports two distinct artifacts:
+- The profiler table: Provides the statistical summary of the algorithm. It answers "What is taking the most time". This becomes really helpful to figure out hotspots. A hotspot would be events that take the most amount of time, can be a bottleneck of the pipeline, or an event that is triggered a lot of times.
+- The profiler trace: Provides the temporal execution view. Answers "When and Why an operation happened", depicting the activities taking place on the CPU and the GPU. This is helpful when we want to investigate the kernel(s) that were launched, any delays in launching them, any overlap between CPU and GPU activities, etc.
+Let's see the two in action with our first execution. (Here is the entire 01_matmul_add.py
+script)
+It is recommended to run this script on a machine with a GPU.
+uv run 01_matmul_add.py --size 64
+If you run the above script (on a GPU machine) you will find a folder traces/01_matmul_add
+with the two artifacts:
+64_bf16_cold_eager.json
+64_bf16_cold_eager.txt
+The .txt
+file holds the profiler table. Upon opening the file, as shown in Figure 1, one would be greeted with a big table with the first column consisting of the events that were triggered inside the scope of profile.
+The other columns are related to the time the event takes on the CPU or GPU or any other device(s) specified in activities
+within torch.profiler.profile
+. Look at which events take the most amount of time, and try to intuitively understand if that event should in fact take that time. It is also important to look at the column "# of Calls" which dictates how many times the event was triggered.
+While we are at it, let's also talk about "Self CPU/CUDA" vs "CPU/CUDA total". The "Self" columns measure time spent only inside the event itself, excluding its children. The "total" columns include the event and all of its children together. So if you look at the "CPU total" of matmul_add
+, it consists of the time it took on self plus the children events it triggered. This is an important nuance to note.
+If you look at the last two lines out of the table you would notice that the profiler tells us that
+Self CPU time total: 2.314ms
+Self CUDA time total: 23.104us
+The CPU time is in ms
+while the GPU time is in us
+. To put things in perspective, the time spent on GPUs (the kernel ampere_bf16_s16816gemm...
+) is less than 1% of the time spent on the CPU (the matmul_add
+operation). The GPU stays idle most of the time, which is an immediate red flag. The reason this happens is that the GPU can compute a small matmul very quickly, so our code spends most of the time preparing the kernels, launching them on the GPU, sending the data to multiply and gathering the results. This concept is known as an overhead-bound algorithm.
+The easiest way to move out of this regime is to use bigger matrix multiplications.
+uv run 01_matmul_add.py --size 4096
+The last two lines in Figure 2 are:
+Self CPU time total: 4.908ms
+Self CUDA time total: 4.495ms
+Both times are in ms, which means we have materialized more GPU time just by increasing the size of the matrix multiplications. If you look at Figure 2 you would also notice that the most CUDA time is now taken by the GPU kernel (ampere_bf16_s16816gemm_..
+) and not by the CPU operation that launched it (matmul_add
+). This means that we were indeed able to move from overhead bound to compute bound.
+We now move into visualising the dispatch chain, which lives inside the .json
+artifacts. You can upload them to Perfetto UI and see the traces, or you can use uvx trace-util traces -b traces
+to generate the Perfetto links directly.
+64x64 traces
+In Figure 3, we see the profiler trace for the matrix multiplication and addition. Here the bar width indicates the duration of an event, the vertical nesting i…（正文已截断）
