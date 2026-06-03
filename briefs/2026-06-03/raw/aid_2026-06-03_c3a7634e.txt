@@ -1,0 +1,26 @@
+As agents generate more code, review and verification are becoming the bottleneck. Engineers can now write PRs faster than ever, but shipping still depends on knowing whether those changes are correct, safe, and ready for production.
+Devin Review now checks hundreds of thousands of PRs per day, helping developers understand, review, and merge code faster than ever. With this launch, we’re bringing that workflow directly into Windsurf, along with a faster local bug detector powered by our own model, SWE-check.
+Devin Review in Windsurf
+Devin Review is built for understanding and verifying complex pull requests.
+Large PRs are hard to review because the structure of the diff rarely matches the structure of the work. Files are usually shown alphabetically, copied or moved code can appear as noisy deletes and inserts, and the reviewer has to reconstruct the actual change from scattered edits.
+Devin Review helps by organizing diffs around the logic of the change. Related edits are grouped together. Copied and moved code is displayed cleanly. And Devin reviews and understands the code in context to identify bugs and flags, which are surfaced with explanations so that you can quickly understand what needs attention.
+Now, you can run Devin Review directly in Windsurf.
+When Devin reviews a PR, you can see the bugs, comments, and findings it flags without leaving your editor. You can inspect the diff, understand the issue, and make changes in the same place you’re already working.
+Devin Review is best for deeper review once your PR is ready. It helps you understand large changes, catch bugs, and resolve issues before merge.
+From Finding Bugs to Fixing Them
+With Devin Review, findings are connected to the rest of the development workflow. You can ask Devin questions about a bug or comment, use codebase-aware chat to understand the surrounding context, and move from a finding to fixing in one seamless UI.
+When Autofix is enabled, Devin can generate fixes for review comments and apply them back to the PR branch. That closes the loop: an agent writes code, Devin Review checks the diff, and Devin can help resolve the issues it finds.
+You get to own the decisions that require judgment: architecture, product behavior, tradeoffs, and edge cases. But the mechanical loop of finding and fixing bugs can move much faster.
+Quick Review for Local Changes
+We’re also launching Quick Review, a new local review tool in Windsurf.
+Before you open a PR, you can run Quick Review to find any potential bugs in your working tree. You can use Quick Review for free with SWE-check, our specialized model for bug detection that’s up to 10x faster than a deep review agent while preserving accuracy.
+Learn more about Quick Review in the docs.
+Two Review Loops, One Workflow
+Devin Review and Quick Review are built for different points in the development cycle.
+Use Quick Review when you want a fast review of local changes before opening a PR.
+Use Devin Review when you want deeper review on a pull request, with smart diff organization, bug findings, explanations, GitHub-compatible review actions, and a path from findings to fixes through Devin.
+Together, they make review part of the same flow as writing code.
+Windsurf 2.0 already brings local agents, cloud agents, PRs, files, and context into one workspace. With Devin Review and Quick Review, Windsurf now brings verification into that workspace too.
+The goal is simple: help you ship faster while keeping quality high.
+Available Today
+Devin Review in Windsurf and Quick Review are available starting today. Download the latest version of Windsurf 2.0 to try them out.

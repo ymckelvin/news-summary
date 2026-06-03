@@ -1,0 +1,7 @@
+2nd June 2026
+Fixes for some limitations that emerged while I was trying to use this to build datasette-agent-micropython
+.
+Recent articles
+- Claude Opus 4.8: "a modest but tangible improvement" - 28th May 2026
+- I think Anthropic and OpenAI have found product-market fit - 27th May 2026
+- Notes on Pope Leo XIV's encyclical on AI - 25th May 2026
