@@ -1,0 +1,84 @@
+Designing the hf CLI as an agent-optimized way to work with the Hub
+hf
+is the official command-line entrypoint to the Hugging Face Hub. Anything you can do on the Hub from the Python SDK, you can do from your terminal: download and upload models, datasets and Spaces; create and manage repos, branches, tags and pull requests; run Jobs on HF infrastructure; manage Buckets, Collections, webhooks and Inference Endpoints.
+The hf
+CLI has been primarily built for our users over the years. But it's now increasingly used by coding agents: Claude Code, Codex, Cursor and more. So we rebuilt it to make it work for both audiences at once. This blog post summarizes what we did, and how we benchmarked it. We found that on complex, multi-step tasks the no-CLI baseline (an agent hand-rolling curl
+or the Python SDK) uses up to 6× as many tokens as the hf
+CLI.
+AI agent traffic on the Hub
+We started tracking agent usage of the Hub in April 2026. The hf
+CLI (and the huggingface_hub
+Python SDK it's built on) detects when a coding agent is driving it by reading the environment variables agents set: CLAUDECODE
+/CLAUDE_CODE
+for Claude Code, CODEX_SANDBOX
+for Codex, plus Cursor, Gemini, Pi, and the universal AI_AGENT
+. That single signal does two jobs: it shapes the CLI's output (more on that below) and it tags each Hub request with an agent/<name>
+user-agent, so we can attribute traffic to the agent driving it. The two largest by distinct users are Claude Code and Codex, well ahead of everything else, and they're the two agents we benchmark later in this article.
+The bars count distinct users per agent; request volume is the sub-label. Claude Code alone is ~40k users and nearly 49M requests, with Codex close behind. These are early numbers (we only began attributing agent traffic in April 2026), but the scale is already significant, and we expect it to keep growing as coding agents become a standard way to work with the Hub.
+Built for humans and agents
+Humans and coding agents expect different outputs for the same hf
+commands. A human wants rich terminal output: ANSI color, padded tables truncated to fit the screen, a green ✅ on success, ✔
+for booleans, progress bars, prose hints. An agent wants
+the inverse: no ANSI, nothing truncated, every value in full since an agent can handle far denser output than a human, kept compact and structured to stay light on tokens. It also can't answer a CLI prompt and will happily re-run a command after a timeout. The rest of this section is how hf
+gives each side what it needs. We introduced agent-mode output in hf
+v1.9.0 and have been migrating the rest of the CLI to it gradually in the following releases.
+One command, multiple renderings
+When hf
+auto-detects agent use (via the environment variables mentioned above), it renders the same command differently. It optimizes output format for humans or agents without passing a flag:
+# human (default in a terminal): aligned table, truncated to fit, with a hint
+> hf models ls --author Qwen --sort downloads --limit 3
+ID CREATED_AT DOWNLOADS LIBRARY_NAME LIKES PIPELINE_TAG PRIVATE TAGS
+------------------------ ---------- --------- ------------ ----- --------------- ------- -------------------------
+Qwen/Qwen3-0.6B 2025-04-27 21156913 transformers 1285 text-generation transformers, safetens...
+Qwen/Qwen2.5-1.5B-Ins... 2024-09-17 15143953 transformers 725 text-generation transformers, safetens...
+Qwen/Qwen3-4B 2025-04-27 14808352 transformers 625 text-generation transformers, safetens...
+Hint: Use `--no-truncate` or `--format json` to display full values.
+# agent (auto-detected): TSV, full ids + ISO timestamps + every tag, nothing truncated
+$ hf models ls --author Qwen --sort downloads --limit 3
+id created_at downloads library_name likes pipeline_tag private tags
+Qwen/Qwen3-0.6B 2025-04-27T03:40:08+00:00 21156913 transformers 1285 text-generation False ['transformers', 'safetensors', 'qwen3', 'text-generation', 'conversational', 'arxiv:2505.09388', 'base_model:Qwen/Qwen3-0.6B-Base', 'base_model:finetune:Qwen/Qwen3-0.6B-Base', 'license:apache-2.0', 'text-generation-inference', 'endpoints_compatible', 'deploy:azure', 'region:us']
+Qwen/Qwen2.5-1.5B-Instruct 2024-09-17T14:10:29+00:00 15143953 transformers 725 text-generation False['transformers', 'safetensors', 'qwen2', 'text-generation', 'chat', 'conversational', 'en', 'arxiv:2407.10671', 'base_model:Qwen/Qwen2.5-1.5B', 'base_model:finetune:Qwen/Qwen2.5-1.5B', 'license:apache-2.0', 'text-generation-inference', 'endpoints_compatible', 'deploy:azure', 'region:us']
+Qwen/Qwen3-4B 2025-04-27T03:41:29+00:00 14808352 transformers 625 text-generation False ['transformers', 'safetensors', 'text-generation', 'arxiv:2309.00071', 'arxiv:2505.09388', 'base_model:Qwen/Qwen3-4B-Base', 'base_model:finetune:Qwen/Qwen3-4B-Base', 'license:apache-2.0', 'endpoints_compatible', 'deploy:azure', 'region:us']
+A human gets an aligned table, truncated to fit the terminal, plus a hint on how to see more, with color cues for status (a green ✓
+on success, red on error). An agent gets the complete record as TSV: full repo ids, full ISO timestamps, every tag, no ANSI codes, nothing truncated, clean to parse and light on tokens.
+In practice, we've implemented logging methods like .table(...)
+, .result(...)
+, .json()
+, etc., which take raw data as input and handle the formatting. In addition to human and agent modes, we've introduced --json
+and --quiet
+options to make it easier to pipe commands together. The default mode is automatically chosen based on context, but users can always force the format of their choice with --format human | agent | json | quiet
+.
+Next-command hints
+CLI commands rarely run in isolation: one step usually implies the next (git add
+, then git commit
+). Many hf
+commands now end with a hint: the exact next command to run, pre-filled with the IDs you just used, so a user or agent can chain straight to the next step instead of working it out from scratch. Start a Job in the background and it points you to its logs; create a Space and it points you to its boot status:
+$ hf jobs run --detach python:3.12 python train.py
+✓ Job started
+id: 6f3a1c2e9b
+url: https://huggingface.co/jobs/celinah/6f3a1c2e9b
+Hint: Use `hf jobs logs 6f3a1c2e9b` to fetch the logs.
+For a human that's a convenience. For an agent it's a rail: the next action is named, parameterized with the right ids, and ready to run, so it takes fewer steps working out what to do. Errors behave the same way, naming the fix instead of just failing:
+Error: Not logged in. Run `hf auth login` first.
+Hints, warnings and errors all go to stderr while data goes to stdout, so none of this guidance pollutes the output the agent is parsing.
+Non-blocking and safe to retry
+hf
+never sits on an interactive prompt waiting for a key an agent can't press. A destructive command still asks a human to confirm, but in agent mode it fails fast with the fix in the message (Use --yes to skip confirmation.
+), and -y
+/--yes
+skips it. And because agents retry on timeouts and lost context, operations are built to be safe to repeat: hf repos create --exist-ok
+is a no-op if the repo already exists, and re-running an upload re-commits cleanly. Separately, the commands that move real data take a --dry-run
+that shows exactly what they'll transfer before they run, which proves handy for humans and agents alike, since neither has to commit to a long download or blind sync:
+# agent mode: a destructive command without --yes refuses, with the fix in the message
+$ hf repos delete my-org/old-model
+Error: You are about to permanently delete model 'my-org/old-model'. Proceed? Use --yes to skip confirmation.
+# commands that move data take --dry-run to preview the transfer first
+$ hf download deepseek-ai/DeepSeek-V4-Pro config.json --dry-run
+[dry-run] Will download 1 files (out of 1) totalling 1.8K.
+file size
+config.json 1.8K
+Discoverable, predictable commands
+hf
+is built to be probed: run hf
+to see the resource groups, run --help
+on the one you need, an…（正文已截断）
