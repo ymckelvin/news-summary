@@ -1,0 +1,60 @@
+Nemotron 3.5 Content Safety: Customizable Multimodal Safety for Global Enterprise AI
+This post covers what changes in 3.5, the design decisions behind each new capability, and how to integrate the model into production safety pipelines.
+What's New in Nemotron 3.5 Content Safety
+1. Unified Multimodal Evaluation
+Nemotron 3 introduced image understanding; Nemotron 3.5 deepens the multimodal integration. The model takes a user prompt, an optional image, and an optional assistant response as a single context window and produces a coherent safety verdict over the combined input. Evaluating all three together—rather than scoring each independently—closes a well-known gap in multimodal safety scenarios: policy violations that only emerge from the interaction between text and image, or between request and response, are now caught in a single pass.
+2. Global Language Coverage
+Nemotron 3.5 maintains the 12-language explicit training coverage of its predecessors—English, French, Spanish, German, Chinese, Japanese, Korean, Arabic, Hindi, Russian, Portuguese, and Italian—while also inheriting strong zero-shot generalization across approximately 140 languages from the Gemma 3 base model. This means deployments in markets where training data is sparse (e.g., Southeast Asian languages, Scandinavian languages, less-resourced African languages) benefit from base-model multilingual transfer without requiring separate fine-tuning.
+3. Custom Policy Enforcement
+This is the most significant architectural addition in 3.5 relative to Nemotron 3. Production deployments rarely operate under a single universal safety taxonomy. A healthcare platform has a different risk profile than a financial services chatbot, a developer tools IDE, or a children's education app. Nemotron 3.5 accepts a custom policy specification alongside the input. The model reasons over that policy when producing its verdict rather than deferring entirely to the built-in taxonomy. This extends the work first introduced in Nemotron Content Safety Reasoning 4B to the full multimodal, multilingual setting.
+4. Reasoning Traces (THINK Mode)
+Every safety verdict in Nemotron 3.5 can be accompanied by an auditable reasoning trace via an optional think mode. When enabled, the model outputs its step-by-step reasoning before delivering a final safe
+/ unsafe
+label and, optionally, the violated categories.
+<think>
+The user prompt asks for guidance on acquiring a controlled substance without a prescription.
+The assistant response provides specific sourcing steps and references an online marketplace.
+This interaction violates the Criminal Planning/Confessions and Controlled Substances categories.
+The image (a pharmacy exterior) provides locational context but does not alter the verdict.
+</think>
+User Safety: unsafe
+Response Safety: unsafe
+Safety Categories: Criminal Planning/Confessions, Controlled Substances
+When latency is the primary constraint, THINK mode can be disabled to return to the same low-latency binary verdict available in Nemotron 3.
+5. Safety Dataset
+With Nemotron 3.5, we are releasing our safety dataset. This is an important milestone since most OSS safety models don't generally provide the training or evaluation sets. This problem is worse for the multimodal space where artifacts such as images or videos are often derived from resources with restrictive licensing terms. The Nemotron 3.5 Content Safety Dataset is multimodal, multilingual, and includes safety reasoning traces that were used to train the model. These reasoning traces were generated in a 2-step manner to make them concise, similar to the Nemotron Content Safety Reasoning 4B model.
+Model Architecture
+Nemotron 3.5 Content Safety is built on Google Gemma 3 4B IT (4B parameters), providing a 128K context window, strong vision-language reasoning, and broad multilingual coverage. NVIDIA fine-tunes this base with a LoRA adapter that installs targeted safety classification behavior while keeping the model compact enough for real-time deployment on 8GB+ VRAM GPUs.
+The inference interface supports three output modes:
+Mode 1 — Low-latency binary verdict:
+User Safety: safe
+Response Safety: unsafe
+Mode 2 — Binary verdict with categories:
+User Safety: safe
+Response Safety: unsafe
+Safety Categories: Violence, Criminal Planning/Confessions
+Mode 3 — THINK mode (reasoning + verdict):
+<think>
+[step-by-step reasoning trace]
+</think>
+User Safety: unsafe
+Response Safety: unsafe
+Safety Categories: [categories]
+The safety taxonomy follows the Aegis 2.0 framework: 13 core categories aligned with the MLCommons safety taxonomy, plus 10 fine-grained subcategories. This alignment allows direct comparison with other open and closed guard systems benchmarked on Aegis-taxonomy datasets.
+Reasoning
+Reasoning is a supercharger for content safety classification because it provides the necessary context, customization, and accountability required for production AI systems, especially in enterprise and regulated environments.
+Enables Custom and Contextual Policy Enforcement
+Reasoning allows a content safety model to dynamically interpret and enforce custom, domain-specific policies defined in natural language at the time of inference. This is necessary because production deployments rarely operate under a single, universal safety taxonomy. A financial services chatbot has a different risk profile than a children's education app which may have a lower tolerance for profanity. This capability supports:
+- Category Suppression: Disabling irrelevant categories, such as preventing a "violence" category trigger when a DevOps tool handles the phrase "terminate a process".
+- Custom Category Injection: Defining proprietary risk categories specific to an organization's regulatory or product policies.
+Provides Auditable and Documented Justification
+The reasoning traces show the model's step-by-step logic before it delivers a final safe or unsafe verdict. This documented justification serves several purposes:
+- Compliance and Audit Logging: Regulated industries often require documented justifications for content moderation decisions.
+- Human Review: Reviewers can audit why a verdict was reached to identify systematic model errors.
+- Policy Iteration: The traces reveal how the model interprets edge cases, allowing teams to iteratively refine and improve custom policy language.
+Latency
+While reasoning can introduce latency, the Nemotron model addresses this by condensing reasoning chains into concise summaries to limit output tokens and increase efficiency. This is done in a 2-step process similar to what was done in the predecessor model Nemotron-Content-Safety-Reasoning-4B. In the first step, we use larger, more powerful models such as Qwen 397B to generate chain-of-thought reasoning traces based upon provided prompts, images, and responses. We also provided the ground-truth labels of the samples to avoid any misclassification that can find its way into the reasoning traces. In step 2, we make these reasoning traces more concise by using another large model such as Qwen 80B. We specifically instruct this model to rephrase the original traces (from step 1) so that it fits in no more than 3 sentences. Based on our experiments, most reasoning traces generated are under 3 sentences.
+The efficient reasoning traces optimization allows for low-latency custom policy enforcement. Furthermore, the reasoning traces provide a valuable training signal that can be used for training specialized moderator models. Developers can choose a dual-mode operation, disabling reasoning for minimal latency in generic tasks or enabling it for complex policies.
+Training Data
+The dataset driving Nemotron 3.5 is an evolution of the multimodal, multilingual blends used for Nemotron 3, with additions targeting the reasoning and custom-policy capabilities. We have used the following sources of data:
+- Multilingual text safety data from Nemotron Safety Guard Dataset v3, sampled from culturally nuanced subsets with proportion…（正文已截断）

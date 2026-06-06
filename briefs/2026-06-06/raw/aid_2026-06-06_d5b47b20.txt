@@ -1,0 +1,27 @@
+Thousand Token Wood: shipping a multi-agent economy on a 3B model
+Try it first: the Space, and the open agent traces.
+I built Thousand Token Wood for the Build Small Hackathon. It is a tiny economy: five woodland creatures, each its own agent on Qwen2.5-3B, trade five goods for pebbles, gossip, hoard, and panic. You poke the wood and watch bubbles, crashes, and a widening wealth gap appear on their own. The model is served with vLLM on Modal; a Gradio app is the window onto the wood.
+This is a field report on the engineering, written for people who build with small models. The short version: a 3B model is a reliable format generator and an unreliable reasoner, emergent systems need designed scarcity, and the best demos sit where a technical constraint meets something you already understand deeply.
+Why small is the design, not the limit
+A living economy needs many agents thinking many times per run. That is exactly where a frontier model is the wrong tool: too slow and too costly to run a council of traders every tick. A small model is what makes a real-time multi-agent simulation feasible. Every creature decides in a single batched GPU call per turn.
+The first economy was dead on arrival
+The naive version did nothing. Production outran consumption, so every creature was self-sufficient and never had a reason to trade. The market cleared once and went silent. The fix was to engineer scarcity:
+- Diet variety: a creature can eat only one unit of any single food per meal, so surviving means buying foods it does not grow.
+- Spoilage: perishable food rots if hoarded, forcing surplus to be sold while it still has value.
+- A winter fuel crisis: every creature must burn firewood each turn, the need rises over time, and only one creature makes firewood.
+That last mechanic drives the drama. One supplier cannot meet rising demand, so the woodcutter gets rich and everyone else competes for warmth.
+Valid JSON, weak judgment
+With scarcity in place, the honest small-model lesson surfaced. The 3B emitted valid JSON on 100% of calls, but its economic judgment was poor: a creature that produced acorns would post an order to buy acorns, the one thing it had in surplus.
+The fix was not a bigger model, it was a sharper prompt. I told each agent what it produced and must never buy, computed the exact list of goods it was short on, and gave it one worked example. Decision quality jumped and the creatures began trading to their roles. The whole loop is wrapped in a tolerant JSON parse-and-repair layer, so a malformed response degrades to a no-op instead of crashing the simulation.
+A second lesson came from wellbeing. I first modeled it as an accumulator, and any chronic shortfall ground every creature to zero over a run, a death spiral that was no fun to watch and that punished the agents' imperfect optimization. I reframed it as a mean-reverting mood that recovers when a creature is fed and warm and never hits zero. Stakes belong in pebbles, prices, and status, not starvation.
+Then it started telling stories
+The feature I am most pleased with ties the project to market history. The player can draw a Wood Legend: a famous episode reskinned as woodland folklore. Tulip Mania becomes the Great Acorn Mania. The South Sea Bubble becomes the Hollow Log Trading Company. The 1929 bank runs become the Run on Oona's Hoard.
+These are not flavor text. Each legend fires real shocks, and the agents react. In one run I drew the Run on Oona's Hoard, the rumor that the owl's vault was empty. Oona began liquidating her honey to raise pebbles, and the flood of supply crashed the honey price from 10 to 3 over the next turns. A reskinned bank run made an agent dump assets and moved a market price. None of it was scripted.
+For that to be visible, prices had to move. They were frozen because the agents quoted back the reference price I showed them. The fix was to let the market reference drift with residual supply and demand after each round: heavy unfilled buying pushes a price up, a glut pushes it down. Prices now trend during scarcity and stay calm in balanced trade.
+What actually happened
+A representative fifteen-turn run, with a drought and a winter rumor injected partway:
+The reasoning behind every one of those moves is in the open traces dataset: each row is a creature's full prompt, raw response, parsed actions, and private thought.
+Takeaways for building with small models
+Most of the engineering is closing the gap between a small model's reliable formatting and its unreliable reasoning, with structure and prompting rather than scale. Emergent systems need designed scarcity; abundance is boring. And the most compelling small-model demos do not need invented drama. Three centuries of market history had it ready, and a council of 3B agents was enough to play it out.
+Small models, big adventures. Try the Space.
+Originally published on Medium.
