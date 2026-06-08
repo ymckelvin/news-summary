@@ -1,0 +1,12 @@
+AmazingDigitalPetDentures
+The Amazing Digital Pet Dentures feeds on your Adventures
+So my idea was simple and a bit complicated at the same time, Have you guys watched The Amazing Digital Circus? it's an animated show which features an AI pair of dentures named caine who lives in a virtual circus with some digital clones of real human beings and he creates and sends them on an adventures everyday, so my project was inspired by that.
+A digital pet that sends you on adventures that may be useful to your real world productivty of sorts like a over engineered todo list disguised as a game of sorts.
+At some point I gave up on the to-do list stuff and just went all the way in on the "creates adventure part" and it kinda back fired. I was using the Nemotron 30b
+I wanted it to create full on games with three js and I tried a lot
+First simple long prompts, a long prompt explaining what to do and how to, failed the model often gave games that didnt work
+then I tried adding skill cards these ones https://github.com/github/awesome-copilot/blob/main/skills/game-engine/SKILL.md to it, and that failed too it blew up the short context window I had set on the model to save on compute but it backfired so I increased the context window and that didnt fix it,
+So I used codex to sort of distill the skills into a single txt file and use RAG over it and that worked but it still didnt give me fully working games they always had something wrong which made them end up as blank screens
+now I have given up and the project exists as something else, a simple HTML toymaker it can creates simple html stuff in one shot but not games, I used it to make stuff like clocks, to do lists, and snake and breakout anything more complex like tetris breaks it https://huggingface.co/spaces/build-small-hackathon/AmazingDigitalPetDentures
+I'm now thinking of a different Idea to pivot to now, any suggestions on this one is greatly appreciated.
+The Amazing Digital Pet Dentures feeds on your Adventures
