@@ -1,0 +1,6 @@
+9th June 2026
+Almost entirely written by the new Claude Fable 5, see my write-up for more details.
+Recent articles
+- Initial impressions of Claude Fable 5 - 9th June 2026
+- Running Python code in a sandbox with MicroPython and WASM - 6th June 2026
+- Claude Opus 4.8: "a modest but tangible improvement" - 28th May 2026
