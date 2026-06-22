@@ -1,0 +1,5 @@
+21st June 2026
+Recent articles
+- sqlite-utils 4.0rc1 adds migrations and nested transactions - 21st June 2026
+- Datasette Apps: Host custom HTML applications inside Datasette - 18th June 2026
+- GLM-5.2 is probably the most powerful text-only open weights LLM - 17th June 2026
