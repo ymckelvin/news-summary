@@ -1,0 +1,45 @@
+Coinbase reduces time from idea to production by 90% with Cursor
+Over 2,400 developers at Coinbase use Cursor as a part of an agent-first engineering model. 75% of all PRs are created by agents, with the average engineer merging 55% more PRs since the beginning of the year.
+Coinbase adopted Cursor as part of a broader shift to redesign its engineering model around agent-first infrastructure. Engineers shifted from writing and reviewing code to defining intent and validating results.
+Today, over 2,400 developers at Coinbase use Cursor as part of their regular workflow. Since adopting an agent-first model, some teams at Coinbase have reduced time from idea to production from 20 days to less than 2 days, a 90% reduction.
+Across Coinbase, 75% of all PRs are created by agents with the average developer saving 7 hours of manual coding each week. Since the beginning of the year, the company has seen a 55% increase in PRs merged per engineer and teams of 1-2 engineers are now building features that once required entire teams.
+Coinbase values the freedom to use any model, and we trust Cursor for optimized inference and caching. And with Composer 2.5, Cursor gives us the most cost-competitive model at the frontier of intelligence.
+An agent-first model of software development
+Chintan Turakhia, Senior Director of Engineering, believed that Coinbase would not see the full impact of coding agents by retrofitting AI into existing systems. According to Turakhia, legacy systems and processes, not developers, are the real bottleneck in how software gets built.
+Too many companies are trying to introduce AI into broken systems. You need to change the way you work to take full advantage of advancements in AI models.
+Instead, Coinbase is redesigning its engineering processes with a few key changes:
+Re-visiting sprint planning
+Coinbase's north star is the speed at which value reaches users. Traditional sprint cycles introduce unnecessary delay in an agent-first world: tickets must be planned, prioritized, and assigned before they are worked on.
+With Cursor, developers can grab tickets as they are created, map out execution with Plan Mode, and delegate implementation to agents. As a result, the time from idea to first PR creation at Coinbase has dropped from 8 days to less than 30 minutes.
+Shifting engineering effort to higher-level abstractions
+Historically, the majority of engineering time was spent writing and reviewing code. Turakhia believes manual human-driven line-by-line code review will trend to zero with agents. Instead, engineers will operate at a higher level: decide what to build, invest in the right architecture choices, and evaluate the end products that agents deliver.
+Coinbase is now writing product and technical requirements explicitly for agents. These living docs guide agent execution and serve as evaluation frameworks after implementation.
+Smaller working groups with broader scope
+Many developers are operating as full-stack engineers instead of specialists because agents have made it easier to address adjacent problem spaces regardless of prior experience. Coinbase has emphasized that developers must become fluent in managing their own team of agents, with many engineers running 5-7 asynchronous agents in parallel to multi-task across projects.
+This has allowed teams of 1-2 engineers to take on projects that previously would have required a full team.
+Driving change from the front
+Turakhia found that the most effective change management comes from leading by example. He started using Cursor daily to model agentic workflows for developers. Turakhia also identified early power users of Cursor and elevated them as internal champions. These leaders taught other developers how to automate common workflows like test writing and legacy code migrations.
+You can't tell people to use AI and expect meaningful change. You have to show them what is possible.
+Turakhia then introduced agent speedruns: 30-minute sessions where every developer on the team is required to ship a PR using Cursor. Turakhia's team produced 50-70 new PRs in early speedruns and now regularly produces over 500 PRs.
+Turakhia's team has also created a new role called "Superbuilders". These developers are carved off from the product roadmap and are tasked solely with increasing engineering velocity with internal tooling. Superbuilders helped build Coinbase's coding agent in Slack, where engineers can move from idea to implementation with fewer manual handoffs.
+Cursor as a foundation for agent-first workflows
+Kyle Cesmat, an engineering manager at Coinbase responsible for developer experience and AI tools, explained why developers reach for Cursor:
+- Preconfigured setup: Developers don't need to invest in complex, custom environment setups. Instead, they can start shipping changes with agents immediately.
+- Model flexibility: Developers can match the underlying model to the type of task at hand. This gives developers more control and allows Coinbase to balance model capability and cost.
+- Robust UI: Immediate visual verification is useful for many software tasks. In Cursor, developers can review agent work in multiple ways: agent-produced demos, the Cursor browser, or directly in files.
+Comfort with agents varies across developers. Because Cursor combines agent orchestration with all the best parts of a full editor, Coinbase can meet engineers where they are and build fluency across the entire team.
+Cursor bridges the fluency gap for developers who are newer to agentic development.
+Building Coinbase with Cursor
+Today, over 2,400 engineers at Coinbase use Cursor to:
+- Tackle feedback-rich tasks in the Coinbase client
+- Build mobile app features with improved local testing and simulation
+- Investigate error logs when developing in Chromium environments
+- Take Linear tickets from planning to implementation to review in real-time
+- Execute deeper, more complex implementations that require bringing together agentic workflows with hands-on developer interventions
+I love the speed of iteration at Cursor. The product has become a mission control for agents rather than just a raw IDE.
+Time from idea to production as a north star
+Coinbase has moved away from input-based productivity metrics such as lines of code. "We want to shift the focus to outcomes, not inputs. Every new line of code is a risk. We should not be incentivizing that," says Turakhia.
+Instead, the north star metric is time from idea to production. With agents, Turakhia's team has improved this metric by over 90%, from 20 days to 1.8 days. Turakhia's long-term target is 4 hours.
+And as agents reduce mechanical implementation work, engineers are enjoying their jobs more.
+Developer satisfaction keeps improving as coding agents like Cursor give engineers time back to focus on more interesting work.
+If you are interested in building an agent-first engineering organization, reach out to start a Cursor trial.
