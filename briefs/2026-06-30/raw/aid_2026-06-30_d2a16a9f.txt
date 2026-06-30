@@ -1,0 +1,7 @@
+29th June 2026
+Tiniest TIL, using AppleScript to count the number of open browser tabs in Safari:
+osascript -e 'tell application "Safari" to count tabs of every window'
+Recent articles
+- Porting the Moebius 0.2B image inpainting model to run in the browser with Claude Code - 22nd June 2026
+- sqlite-utils 4.0rc1 adds migrations and nested transactions - 21st June 2026
+- Datasette Apps: Host custom HTML applications inside Datasette - 18th June 2026
