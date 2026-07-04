@@ -1,0 +1,18 @@
+How Notion used the Cursor SDK to embed coding agents
+You can now delegate tasks to Cursor directly from Notion. Tag Cursor in a doc, mention it in a thread, or assign it an issue in your database. Cursor takes the work end to end: planning, building, testing, and verifying its work before opening a PR.
+Notion stood up this integration in just a few weeks using the Cursor SDK, letting them embed coding agents into their product without having to build and maintain the entire agent themselves.
+We went from nothing to a full integration in a couple of weeks, which says a lot about how well-shaped the Cursor SDK is.
+Cursor already lives where your team collaborates, from Slack to GitHub, and now it's available in Notion.
+Embedding agents
+The Cursor SDK lets you bring Cursor directly inside your product, infrastructure, or workflow. It gives developers the same harness, models, and runtime we use in production, so you get a full-stack coding agent out of the box instead of building and maintaining all the infrastructure yourself.
+That allowed Notion to build agents into their product in weeks, instead of months, and focus on the product and user experience instead of agent infrastructure.
+Building and running an autonomous coding agent is an enormous, specialized system, and Cursor does it better than we could. There's a deep stack behind agents: cloud sandboxes, agent environments, model routing, tool use, and more. Notion wants to spend engineering time on the product, not agent infrastructure. Cursor is the agent engine. Notion is the surface and the context.
+Using the SDK
+Notion integrated Cursor behind a provider-agnostic harness for external agents, and it slotted in as one implementation. The integration was a clean and simple experience because the shape of the Cursor SDK cleanly lined up with Notion's model: a Notion thread becomes a Cursor agent and every message in that thread becomes an agent run.
+The first message creates the agent with the prompt, the selected repo, the model, any MCP servers, and automatic PR creation enabled. Each follow-up starts a new run, streamed over SSE so users watch the work happen live and resume from the last event if a connection drops.
+The best compliment I can give the SDK is that integrating Cursor was a thin adapter. The shape of agents and runs lined up with our model almost directly.
+With support for remote MCPs, the Cursor SDK connects agents to Notion's custom server. That allows Cursor to read and write into the workspace it's working for in real time, with full state awareness instead of coding in a vacuum.
+"When you put standout remote MCP support together with cloud sandboxing and tool use, Notion gets a lot of the 'agent does real work and ships a PR' agent loop for free. That's a lot of hard infrastructure we don't have to build ourselves," said Shen.
+Customizing agents
+With this Notion integration, you can shape Cursor for the task at hand. Start from a template for common workflows like codebase Q&A, repo exploration, or bug triage, or write your own instructions from scratch. You also choose which MCP servers, skills, and subagents Cursor can reach, and set up custom triggers so that you can automatically kick off Cursor within your own product.
+If you want to build Cursor into your own product, start with the Cursor SDK docs.
