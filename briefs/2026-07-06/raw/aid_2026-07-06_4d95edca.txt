@@ -1,0 +1,1 @@
+On SWE-bench Pro, 63% of successful Opus 4.8 Max resolutions retrieved the fix rather than derived it. Stricter eval harnesses show how benchmark scores can conflate coding ability with answer retrieval.
