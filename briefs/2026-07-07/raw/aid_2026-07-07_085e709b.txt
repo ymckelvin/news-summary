@@ -1,0 +1,70 @@
+LeRobot v0.6.0: Imagine, Evaluate, Improve
+TL;DR
+LeRobot v0.6.0 introduces world model policies (VLA-JEPA, FastWAM, LingBot-VA) that learn to imagine the future, a wave of new VLAs (GR00T N1.7, MolmoAct2, EO-1, EVO1, Multitask DiT), and a new reward models API (Robometer, TOPReward). It ships six new simulation benchmarks unified under lerobot-eval, the lerobot-rollout CLI with DAgger-style human-in-the-loop corrections, FSDP training, and cloud training on HF Jobs. Datasets get depth support, an automatic language annotation pipeline, custom video encoding, and up to 2x faster data loading, all on top of a leaner installation.
+Table of contents
+- LeRobot v0.6.0: Imagine, Evaluate, Improve- TL;DR
+- Table of contents
+- World models: policies that imagine
+- VLAs: the model zoo keeps growing
+- Reward models: knowing when your robot succeeds
+- Datasets: faster loading, richer data
+- Benchmarks: one CLI to evaluate them all
+- Training & inference
+- Codebase: leaner and cleaner
+- Community & ecosystem
+- Final thoughts
+ 
+World models: policies that imagine
+The robotics world is asking a big question: do world models actually help robot policies? v0.6.0 brings three policies to LeRobot to help answer that question. Each one learns to imagine the future as part of its training, and each takes a different path to keep that imagination affordable.
+VLA-JEPA
+VLA-JEPA teaches a compact VLA (built on Qwen3-VL-2B) to predict the future in latent space while it learns to act: during training, a JEPA world model has to anticipate upcoming frames from the model's own actions. The trick is that the world model then disappears at inference, so you get world-model supervision at zero extra inference cost. Three ready-to-use checkpoints are on the Hub, including a DROID-pretrained base for fine-tuning:
+lerobot-train \
+  --policy.path=lerobot/VLA-JEPA-Pretrain \
+  --dataset.repo_id=${HF_USER}/my_dataset \
+  --policy.repo_id=${HF_USER}/my_finetuned_policy
+Check out the VLA-JEPA documentation and the paper to learn more.
+LingBot-VA
+LingBot-VA goes one step further: an autoregressive video-action model that predicts future video and actions together, chunk by chunk, and feeds real observations back in to keep its imagination grounded. You can even save what the robot imagined (--policy.save_predicted_video=true) and compare it with what actually happened. Inference runs on a single 24–32 GB GPU. Check out the documentation and the paper for the technical details.
+FastWAM
+FastWAM asks the question in its paper title: do world action models need test-time future imagination? It pairs a ~5B video-generation expert with a compact action expert in a single network, so the model literally learns to dream its own rollouts. At inference it skips the dreaming entirely and directly denoises action chunks. Fine-tune it from lerobot/fastwam_base, and read more in the documentation.
+VLAs: the model zoo keeps growing
+GR00T N1.7
+We upgraded our NVIDIA GR00T integration to GR00T N1.7, the newest open generation of NVIDIA's cross-embodiment foundation model. N1.7 swaps the previous VLM for Cosmos-Reason2-2B (built on Qwen3-VL) feeding a flow-matching action head, and our integration is parity-tested against NVIDIA's original Isaac-GR00T implementation: same inputs, same outputs. Flash-attention is now optional, so pip install 'lerobot[groot]' just works, and you can load NVIDIA's published checkpoints directly.
+GR00T N1.7 replaces N1.5 in LeRobot. If you need N1.5, pin
+lerobot==0.5.1.
+MolmoAct2
+MolmoAct2, the Allen Institute for AI's vision-language-action model, is now ported into LeRobot with the full lifecycle covered: fine-tuning (full or LoRA), evaluation, and real-robot deployment. Ready-made checkpoints with calibration correction baked in mean you can run it zero-shot on an SO-100/101:
+lerobot-rollout \
+  --policy.path=lerobot/MolmoAct2-SO100_101-LeRobot \
+  --robot.type=so100_follower \
+  --robot.port=/dev/ttyACM0 \
+  --robot.cameras='{cam0: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30}, cam1: {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}}' \
+  --task="pick up the red cube" --duration=30
+Inference fits in ~12 GB at bf16, and LoRA fine-tuning fits on a single 24 GB GPU. See the MolmoAct2 documentation for the full deployment guide.
+EO-1
+EO-1, a VLA pretrained upstream on interleaved vision-text-action data, joins LeRobot: a Qwen2.5-VL-3B backbone with a flow-matching action head, contributed by one of the paper's own authors. Train it with the standard lerobot-train workflow using --policy.type=eo1. Details in the documentation and the paper.
+Multitask DiT
+The Multitask Diffusion Transformer policy brings the TRI Large Behavior Models recipe to LeRobot: a ~450M-parameter diffusion transformer conditioned on CLIP vision and language embeddings, so one model learns many tasks selected via natural language. It supports both diffusion and flow-matching objectives, and it is small enough to train yourself. See the documentation.
+EVO1
+VLAs don't have to be huge. EVO1 packs its policy into 0.77B parameters, an InternVL3-1B backbone with a flow-matching action head, small enough to fine-tune and run in real time on modest GPUs. It ships with two-stage fine-tuning and Real-Time Chunking support out of the box. See the EVO1 documentation and the paper.
+Reward models: knowing when your robot succeeds
+Success detection and progress estimation are missing pieces in the robot learning loop, and v0.6.0 gives them a home. LeRobot now has a unified reward models API (lerobot.rewards), mirroring the policies API, with four reward models behind one interface - the HIL-SERL reward classifier, SARM, and two new additions:
+Robometer
+Robometer is a pretrained, general-purpose reward model: point lerobot/Robometer-4B at any LeRobot dataset and it scores task progress and success from raw video plus a language instruction, with no task-specific training required. It is built on Qwen3-VL-4B and trained via trajectory comparisons over a dataset of more than one million robot trajectories (RSS 2026 paper).
+TOPReward
+TOPReward goes fully zero-shot: no reward weights at all. It wraps an off-the-shelf VLM (Qwen3-VL) and reads the log-probability of the token "True" given the trajectory video and the task instruction. Any capable VLM becomes a reward function.
+Both ship with labeling scripts that write per-frame progress curves into your dataset, ready for reward-aware behavior cloning (RA-BC), dataset quality inspection, and progress-overlay videos. Check the Robometer and TOPReward docs.
+Datasets: faster loading, richer data
+Your codec, your rules
+Recording is no longer stuck with one hard-coded codec. The new --dataset.rgb_encoder.* options expose the full encoding surface (codec, quality, pixel format, GOP, presets), and vcodec=auto probes for hardware encoders like NVENC, VideoToolbox, VAAPI, and QSV before falling back to the default software AV1 encoder. For existing datasets, one command re-encodes everything:
+lerobot-edit-dataset \
+    --repo_id ${HF_USER}/my_dataset \
+    --operation.type reencode_videos \
+    --operation.rgb_encoder.vcodec h264 \
+    --operation.rgb_encoder.crf 23
+Full details in the video encoding documentation.
+Depth support, end to end
+Plug in an Intel RealSense, set use_depth: true, and LeRobot records depth maps end to end: captured in millimeters, compressed as compact 12-bit depth video streams alongside your RGB cameras, and decoded back to physical units at training time. Depth renders live during recording and in lerobot-dataset-viz, and it works across SO-100/101, Koch, OpenArm, reBot, Unitree G1 and more.
+Language annotations at scale
+Your dataset stops being one task string per episode. LeRobot datasets now natively store rich language annotations (timestamped subtasks, plans, memory, corrections, speech, and per-camera VQA pairs), and the new lerobot-annotate CLI fills them in automatically using a VLM that watches your episodes:
+le…（正文已截断）
