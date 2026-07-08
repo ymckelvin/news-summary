@@ -1,0 +1,6 @@
+7th July 2026
+The version that retires the library, instead implementing a compatibility shim against the new sqlite-utils 4.0 dependency.
+Recent articles
+- sqlite-utils 4.0, now with database schema migrations - 7th July 2026
+- sqlite-utils 4.0rc2, mostly written by Claude Fable (for about $149.25) - 5th July 2026
+- Have your agent record video demos of its work with shot-scraper video - 30th June 2026

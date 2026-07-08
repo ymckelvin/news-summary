@@ -1,0 +1,51 @@
+Hugging Face Models on Foundry Managed Compute
+The Platform: Microsoft Foundry and Managed Compute
+Microsoft Foundry is a platform for building and operating agentic AI applications. Foundry starts with the widest model selection on any cloud — models from Microsoft, OpenAI, Anthropic, Meta, Mistral, DeepSeek, Hugging Face, and others, spanning frontier, open-source, and custom weights — all accessible through a single endpoint and a single set of SDKs in Python, C#, JavaScript, and Java.
+On top of those models sits the Foundry Agent Service: multi-agent orchestration with built-in memory, knowledge grounding through Foundry IQ, and a catalog of connectable tools via agentic protocols, so agents can work with enterprise data. Once agents are running, Foundry provides end-to-end tracing, real-time monitoring, continuous evaluations, and a prompt optimizer that improves agent behavior based on eval results — observability and quality loops that are part of the platform.
+Alongside that, developers get access to:
+- Content safety filters
+- Task-adherence guardrails
+- An AI Red Teaming Agent for adversarial testing
+- Unified RBAC
+- Private networking
+- Azure Policy integration directly within the platform
+Alongside pay-per-token (lowest-friction path to get started) and provisioned throughput (predictable, high-performance production workloads on frontier models), Foundry Managed Compute is the third deployment option in Foundry: a managed GPU platform-as-a-service for open-source and custom models.
+You deploy a model instance described by the things that matter to your workload — parameter count, context length, and whether you want to optimize for latency or throughput — and Foundry handles the GPU topology underneath, whether the instance lands on one accelerator or several, so you think and plan in model terms.
+Microsoft takes care of the machine: container updates, runtime upgrades, and security patches happen automatically on the supported runtimes — vLLM, SGLang, TensorRT-LLM, NIM, TEI, llama.cpp — without redeploying your model, while model configuration, deployment behavior, and routing stay with you.
+That consistency carries through the developer surface — pay-per-token, provisioned throughput, and Managed Compute share:
+- A single endpoint
+- The same SDKs
+- The same authentication
+- The same observability
+- A single bill
+Open-source models integrate with Foundry Agents the same way frontier models do, so you can mix model types in a single agent without a separate integration path.
+Managed Compute offers:
+- Global deployments — broadest capacity and best pricing
+- Data Zone deployments — residency and sovereignty
+Same code, same workflow. Quota is aligned to accelerator families, so a plan built on the H100 family today carries forward as new hardware generations come online.
+Why Hugging Face
+Hugging Face is the public square of open AI: 15 million builders, 400,000 organizations, and over 3 million open models published, with new frontier capabilities — agentic coding, video segmentation, speech, embeddings — landing weekly. It's the GitHub of open models, where the community publishes weights, writes model cards, compares evaluations, and pulls models for experimentation.
+Open models have closed the gap with proprietary models on benchmark after benchmark, and they unlock things proprietary endpoints can't:
+- State-of-the-art is now open. Leading open-weight models are competitive with the top closed frontier models on the most widely used benchmarks.
+- Deep customization. Full weights make it possible to fine-tune, distill, quantize, and adapt with LoRA — tailoring models to your domain, your data, and your latency and cost targets.
+- Your model, your hosting. Weights run in your tenant on infrastructure you control, behind your inference endpoint, with your identity and network boundaries.
+- Cost shaping. Pay for accelerators by the hour, scale to zero when idle, and right-size GPUs to the specific model — useful for steady, high-volume, or latency-sensitive workloads where per-token pricing is harder to predict.
+- Version control. Pin a specific model version, evaluate it, deploy it, and move forward or roll back on your own release cadence.
+The catch has always been the operational layer: discovery, license review, security screening, runtime selection, GPU sizing, image building, CVE patching, and standing the model up behind an enterprise-grade endpoint. Hugging Face, by itself, is not an enterprise serving platform. Hugging Face models on Foundry is that operational layer, run by Microsoft.
+Hugging Face Models on Foundry
+The Hugging Face Collection brings a curated subset of models directly into the Foundry Model Catalog:
+- Refreshed weekly — trending models from the Hugging Face ecosystem are added continuously as the community publishes them.
+- Every modality — text, vision, audio, and multimodal: LLMs and VLMs for chat and agents, ASR and speech translation, embeddings, segmentation, image generation.
+- Safetensors only, no untrusted code — every model in the Collection is security-screened and ships in the SafeTensors weight format, with no trust_remote_codeexecution paths unless rigorously reviewed.
+- The right runtime for the model — vLLM and SGLang for LLMs, TensorRT-LLM and NIM where applicable, TEI for embeddings, llama.cpp for CPU — Foundry picks the engine that matches the model.
+From your side, an open-weight model in the Hugging Face Collection looks and behaves like any other model in the Foundry Model Catalog, and every model in the Collection has been put through a multi-stage publishing pipeline before it ever shows up there.
+The Curation Pipeline
+Hugging Face and Microsoft work together to bring the most popular open-weight models from the Hugging Face ecosystem to Microsoft Foundry — production-ready for enterprise environments — through a systematic curation process:
+- Identify trending models in the Hugging Face ecosystem — based on community signals, partner requests, and customer demand — and select candidates for enterprise readiness.
+- Screen for compliance and security — model licenses are reviewed against Microsoft's enterprise distribution policy (with license metadata captured and preserved on the catalog model card), and repositories are inspected for trust_remote_codepatterns and custom executable code; any model that would require executing third-party Python at load time is either remediated or excluded.
+- Build, scan, and publish runtimes — Microsoft builds inference container images on supported runtimes (vLLM, SGLang, TensorRT-LLM, NIM, TEI, llama.cpp), scans them for CVEs, and signs and publishes them to a Microsoft-managed container registry.
+- Upload weights to secure Azure storage — model weights are pulled from Hugging Face once, validated against the published model card, and stored in Microsoft-managed Azure storage in the regions where the model is served.
+- Validate and publish to the catalog — every model + runtime + accelerator combination is tested for API conformance (chat completions, embeddings, rerank, etc.) and performance (latency, throughput, time-to-first-token, inter-token decode time), then the validated model — with its templates, runtime images, and weights — is published to the Foundry Model Catalog with a one-click deploy path onto Managed Compute.
+Because weights are pre-staged in Azure storage and runtime images live in a Microsoft-managed registry, your deployments won't need outbound network access to Hugging Face Hub — you can deploy to production inside a private network.
+Model Runtimes
+Hugging Face models on Foundry are powered by a versatile collection of community-built, open-source inference runtimes — each selected and tuned for Foundry Managed Compute, and matched to the model architectures it serves best. Across all runtimes, the systematic curation process means new versions and patches land on Foundry quickly, and existing model deployments are upgraded auto…（正文已截断）
