@@ -1,0 +1,6 @@
+9th July 2026
+Let's LLM run prompts against the new muse-spark-1.1 model.
+Recent articles
+- The new GPT-5.6 family: Luna, Terra, Sol - 9th July 2026
+- sqlite-utils 4.0, now with database schema migrations - 7th July 2026
+- sqlite-utils 4.0rc2, mostly written by Claude Fable (for about $149.25) - 5th July 2026
