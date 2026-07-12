@@ -1,0 +1,1 @@
+[...] Work on web and mobile runs in the cloud. Work in the desktop app can also use local files and desktop apps with your permission. At launch, cloud Work conversations do not appear in desktop Work; desktop Work threads and local files remain on that computer. &mdash; OpenAI , trying (unsuccessfully) to clarify ChatGPT Work Tags: openai , chatgpt , ai
