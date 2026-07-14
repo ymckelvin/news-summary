@@ -1,0 +1,85 @@
+Profiling in PyTorch (Part 3): Attention is all you profile
+This is the third post of Profiling in PyTorch, a series where we slowly build the skill of reading profiler traces and use it to drive optimization:
+The series "Profiling in PyTorch" is meant to make you comfortable reading profiler traces and tables. In Part 1 we profiled basic math operations like addition and multiplication. We saw how the profiler table uncovers hotspots, and how the profiler trace shows the order in which an algorithm runs over time.
+In Part 2 we wrapped that addition and multiplication into a torch linear layer. We then stacked several linear layers on top of each other (a multilayer perceptron) and profiled that. Along the way we also profiled fused and hand-tuned kernels.
+From the perspective of the Transformer architecture, the next logical step for us to profile is yet another fundamental algorithm, attention. While being infamous for its quadratic-time complexity, many clever tricks exist to mitigate that issue and make it fast. Our goal here is not to cover every trick in detail. Instead, we want to see how each one looks different under the profiler.
+The scripts for this blog post live here:
+04_a_naive_attention.py,04_b_inplace_ops_attention.py,04_c_sdpa_attention.py, and04_d_kernels_attention.py. Like before, it helps to open them in a separate tab and walk through the code as you read. We use anNVIDIA A100-SXM4-80GBGPU to run the scripts. It is really easy to set up a GPU on the Hugging Face infrastructure and experiment with the scripts using Dev Mode with Spaces. One could also run the scripts with the Hugging Face Jobs pipeline.
+Naive attention
+Attention works with Queries (q), Keys (k), and Values (v). The interaction between them can be written as a short sequence of steps:
+- Build the attention scores scores:matmul(q, k.T)
+- Scale the scores: scores * scale
+- Apply a causal mask to the scores: scores.masked_fill(mask, "-inf")
+- Normalize the scores with softmax to get the attention weights attn:softmax(scores)
+- Reweight the values with those weights: matmul(attn, v)
+So attention is really a collection of primitive operations. Some of them we already know (the matmuls), and the rest are easy to spot. Let's write a naive attention module in PyTorch and profile it.
+class NaiveCausalAttention(nn.Module):
+    def __init__(self, head_dim):
+        super().__init__()
+        self.scale = 1.0 / math.sqrt(head_dim)
+    def forward(self, q, k, v, mask):
+        scores = torch.matmul(q, k.transpose(-2, -1))
+        scores = scores * self.scale
+        scores = scores.masked_fill(mask, float("-inf"))
+        attn = torch.softmax(scores, dim=-1)
+        out = torch.matmul(attn, v)
+        return out
+Before opening the trace, let's do our usual exercise and guess what we should see. Tracing the forward of this module, we expect:
+- a matmul kernel (q . k.T)
+- a mul kernel (the scaling)
+- an operation for the masking
+- a softmax kernel
+- a matmul kernel (atten . v)
+uv run 04_a_naive_attention.py
+uvx trace-util -f traces/ -b <hf_uname>/traces
+Figure 1 shows the CPU lane of the profile (the GPU lane is folded so it does not overwhelm us). Inside attn_fwd (our annotated forward call) we can see exactly the operations we guessed. The matmul is an old friend by now, and the new operations are easy to spot:
+- mul: the scaling
+- masked_fill: the causal masking
+- softmax: the softmax kernel
+Now let's unfold the GPU lane and see which kernels were actually launched.
+Figure 2 shows the GPU lane next to the CPU lane. Let's zoom into a single attn_fwd block on the GPU lane to look at the kernels one by one.
+Figure 3 lets us read off the individual kernels for one profiler step:
+- matmul (query and key)
+- mul (scaling)
+- memory copy 🤔
+- causal masking
+- softmax (produces the attention weights)
+- matmul (attention weights and values)
+Five of these are expected. The memory copy is the odd one out, so where does this come from? The clue is that PyTorch has in-place operations. When you operate on a tensor the ordinary (out-of-place) way, PyTorch often makes a copy, applies the requested operation to it, and returns the copy. Following the sequence of operations, the culprit here is our masked_fill.
+What if we replaced this with an in-place operation?
+Naive attention with inplace causal masking
+All we change is masked_fill to masked_fill_ (note the trailing underscore, PyTorch's convention for in-place operations), and we run the same script.
+def forward(self, q, k, v, mask):
+    # q, k, v: [batch, heads, seq, head_dim]
+    scores = torch.matmul(q, k.transpose(-2, -1))  # [batch, heads, seq, seq]
+    scores = torch.mul(scores, self.scale)
+-    scores = scores.masked_fill(mask, float("-inf"))
++    scores.masked_fill_(mask, float("-inf"))
+    attn = torch.softmax(scores, dim=-1)
+    out = torch.matmul(attn, v)  # [batch, heads, seq, head_dim]
+    return out
+Let's look at the trace and see if something changed.
+uv run 04_b_inplace_ops_attention.py
+uvx trace-util -f traces/ -b <hf_uname>/traces
+The in-place version (Figure 5) wraps far fewer CPU ops inside the masking step than the out-of-place version (Figure 4). This is an encouraging signal. Let's unfold the GPU lane to confirm what happened there.
+On the GPU lane the Memcpy kernel is gone for good (Figures 6 and 7). With a one line change we shaved a whole kernel off each forward pass. This may not look like much on its own, but remember this is a single attention operation. In the context of a transformer based large model (LLMs, Diffusion models, etc.), it repeats once per layer, and there are many layers, so the saving adds up quickly (and if it earns you a raise, sharing at least 10% with us feels only fair).
+Out-of-place is PyTorch's default for a reason. To compute gradients, autograd has to remember the tensor values it saw on the forward pass, because many backward formulas reuse them. An in-place operation overwrites those values in memory, so the backward pass would read the wrong numbers. Due to the fact that we run
+forwardundertorch.no_grad, in-place is safe for us, with no backward pass and nothing to corrupt. It is also noteworthy that in-place operations do not only save time (like we see in our case) but also memory (due to no extra copy) which is great for large tensors like logits!
+Scaled Dot Product Attention
+We just built attention from primitives, and even shaved off a Memcpy. The good news is that the PyTorch team has done all of this for us, and packaged the whole pipeline into a single function:
+from torch.nn import functional as F
+F.scaled_dot_product_attention(q, k, v, is_causal=True)
+This one line replaces our hand written module, and is_causal=True even saves us from building the mask by hand. It is worth pausing to appreciate how much this one call hides. And it hides more than just code lines. Scaled Dot Product Attention (SDPA) does not have a single implementation. Under the hood it dispatches to one of the several backends and picks the fastest one that supports our inputs (dtype, head dimension, mask, hardware, etc.).
+The official SDPA tutorial walks us through this selection, and the backends themselves are listed in the torch.nn.attention.SDPBackend enum:
+from torch.nn.attention import SDPBackend
+BACKENDS = {
+    "math": SDPBackend.MATH,
+    "flash": SDPBackend.FLASH_ATTENTION,
+    "efficient": SDPBackend.EFFICIENT_ATTENTION,
+    "cudnn": SDPBackend.CUDNN_ATTENTION,
+}
+Normally SDPA chooses for us, but we can pin a specific backend with the torch.nn.attention.sdpa_kernel context manager. This is what we do in our scripts. This lets us profile each backend on its own and read how differently they show up in the trace. Let's go one at a time.
+Math backend
+uv run 04_c_sdpa_attention.py --backend math
+uvx trace-util -f traces/ -b <hf_uname>/traces
+Before we open anything, let's guess. We have replaced hand written attention (matmul, mul, mask, softmax, matmul) with a single one liner, so we should expe…（正文已截断）
