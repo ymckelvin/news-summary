@@ -1,0 +1,18 @@
+Introducing Grok 4.5
+Today we are releasing Grok 4.5 together with SpaceXAI, our most intelligent model and the first we've built for more than software engineering.
+Grok 4.5 can handle difficult, long-running tasks that require creatively using tools to solve problems, whether in software engineering, data science, finance, legal work, or anything else you do on a computer.
+Cursor subscription plans for individuals and teams include significant usage of the model with double usage for the first week. We've also added new safeguards reflecting the model's cybersecurity capabilities.
+A strong foundation
+Grok 4.5 is a mixture-of-experts model that we trained jointly with SpaceXAI.
+Training included trillions of tokens of Cursor data which capture a wide-range of user interactions with codebases and software tools. This dataset lets the model learn both from existing software as well as developer-agent interactions, capturing how developers work and how agents interact with their environments.
+While we trained our previous model, Composer 2.5, to be a coding specialist, for Grok 4.5 we kept the training data mix deliberately broader. This involved drawing on high-quality STEM tasks, research papers, and other knowledge work, so that the model gained proficiency across a wide range of domains.
+Reinforcement learning on difficult problems
+We used reinforcement learning on difficult problems in realistic environments spanning both software engineering and broader knowledge work. These environments teach the model to investigate problems, use tools, recover from mistakes, and verify results.
+Many of these problems had to be designed to be difficult enough that even frontier models fail at them. As models improve, existing tasks stop teaching them anything new, and problems that once required extensive reasoning become routine.
+We developed a distributed agent system to construct these environments at scale. Engineers specify a problem and how a solution is verified, and large groups of agents construct, test, and refine each environment. Some would have taken teams of hundreds of engineers months to build. This is one of the ways in which we used the previous model to accelerate progress on the next model.
+Get started with Grok 4.5
+Grok 4.5 is available today in Cursor across desktop, web, iOS, CLI, and our SDK.
+Individual and team plans include significant usage of the model as part of our first-party model pool, and we are doubling usage for the first week. The base model is priced at $2/M input tokens and $6/M output tokens. There is also a fast variant at $4/M input tokens and $18/M output tokens.
+Grok 4.5 and Composer 2.5 are two different model weight classes, and we're excited to support both sizes and weights. Composer 2.5 will remain offered, and we will release new models of this size going forward.
+- SWE-Bench Pro and Terminal-Bench show self-reported scores for third-party models. For SWE-Bench multilingual, the GPT 5.5 score comes from our internal run.
+- Grok 4.5 has an advantage on CursorBench because an earlier snapshot of the Cursor codebase was accidentally included in training. The exact impact is unclear. That data has been removed for future models, and in parallel we are working on a larger update to CursorBench, hence the exclusion here.

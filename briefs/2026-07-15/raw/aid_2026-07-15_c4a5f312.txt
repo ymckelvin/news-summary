@@ -1,0 +1,1 @@
+Dependabot now waits until a new release has been available on its registry for at least three days before opening a version update pull request. This cooldown is now the default and requires no configuration. &mdash; GitHub Changelog , embracing dependency cooldowns Tags: dependency-cooldowns , packaging , security , github
