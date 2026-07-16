@@ -1,0 +1,111 @@
+Welcome Inkling by Thinking Machines
+TLDR; Inkling by Thinking Machines is out on Hugging Face. Inkling is a huge multimodal LLM that understands all modalities (image, audio, text), has agentic capabilities, and supports 1M context. It comes in full BF16 and a well-calibrated NVFP4 variant, and includes speculative MTP layers for faster inference. There’s day-0 support in transformers, SGLang, and llama.cpp.
+What makes Inkling special?
+Inkling is the first large open model with ~1T parameters and 1M context window to natively receive image, text, and audio inputs, trained on 45 trillion tokens of text, images, audio and video. It’s focused on reasoning across modalities such as audio, images, and text; and is intended for domain adaptation via fine-tuning. We’ve tinkered with this model to build some demos and explore the architecture, and we think it’s great for building a new wave of multimodal reasoning apps.
+Overall Capabilities and Architecture
+Inkling is a decoder-only multimodal Mixture-of-Experts model with 975B total and 41B active parameters. There are a lot of things going on, so let’s break each part down:
+- Decoder-only: This means that the architecture supports causal autoregressive generation, like in most state-of-the-art LLMs.
+- Multimodal: The model can ingest text, audio, and images.
+- Mixture of Experts (MoE): The feed forward networks inside each layer are sparse, achieving faster inference because only 41B parameters are active at any given time. The model has 256 experts, as we’ll see later.
+Here’s a quick glance of the architecture.
+Relative attention: Instead of RoPE, which is the usual method to inject positional information in transformers models, Inkling uses relative attention to encode position information. Each attention layer learns position directly in the attention logits. Aside from key-query-values, there's a fourth projection producing a per-token, per-head relative feature R. This projection tensor is then tweaked with distance information (distance between the key and the query vector) and propagated into the attention module.
+Hybrid attention: The decoder layers alternate between global attention (attending to the full context length at once) and sliding window attention (attending to a fixed context window in a sliding fashion). The architecture has a pattern of 5:1 sliding window to global attention layers. This hybrid attention scheme provides efficiency in computation. The final layer uses global attention to help build feature-rich representations.
+Short convolution: The model uses a distinctive short 1D convolution, or SConv over the hidden states. SConv reads the current token and the previous W-1 hidden states, with W being the sliding window size. The intuition here is that SConv helps with local attention while freeing the attention and MoE modules from local representations.
+MoE with shared experts sink: In Inkling, the router scores both routed experts and shared experts. Top-k selection is performed over 6 experts, plus 2 shared experts always active.
+Vision understanding: The model includes a simple hierarchical MLP patchifier consisting of several linear layers. Each layer merges pixels progressively, until the final layer produces one embedding per patch.
+Audio understanding: The architecture employs a discretized mel spectrogram, where each of the audio chunks (of 100 ms) are converted to the mel scale and then classified into the exact mel spectrogram bin.
+The multimodal towers are relatively simple modules, unlike other models that employ separate encoders for each modality. Each image patch passes through the image embedding tower and the audio chunk is passed through the audio embedding tower to get both media embeddings. Image inputs also include an additional temporal dimension for video processing. We expect this capability to be useful for downstream fine-tuning, but we haven’t evaluated out-of-the-box video performance. The tower folds the patch grid, a small local block of neighboring tokens is stacked into the channel dimension and goes through hMLP. The audio waveform is converted to mel scale, which is then classified into a discrete mel bin. These mel bin values are embedded in the audio embedding tower and the embeddings are then summed to construct the final audio input.
+Inference Support
+Inkling comes with day-0 transformers support and is supported in major inference engines like SGLang and vLLM.
+This model is huge. The bf16 checkpoint requires 2 TB of VRAM, while the nvfp4 version requires 600 GB of VRAM. You can try the model through serverless inference routers like Inference Providers, or use ggml quants for local deployment with llama.cpp.
+Transformers
+The easiest way to infer with transformers directly is to use the any-to-any pipeline. You can use either the 16 bit "thinkingmachines/Inkling" on Hopper or later GPUs, or the quantized NVFP4 checkpoint "thinkingmachines/Inkling-NVFP4" on Blackwell Nvidia GPUs. Make sure to have the latest version of transformers (5.14.0 was released today) (pip install -U transformers).
+from transformers import pipeline
+model_id = "thinkingmachines/Inkling"
+# model_id = "thinkingmachines/Inkling-NVFP4"
+pipe = pipeline("any-to-any", model=model_id)
+After initializing the pipeline, you can pass in the prompt as follows.
+image_url = (
+    "https://huggingface.co/datasets/merve/vl-test-suite/"
+    "resolve/main/pills.jpg"
+)
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "image": image_url,
+            },
+            {
+                "type": "text",
+                "text": "Do components in this supplement interact with each other?",
+            },
+        ],
+    },
+]
+output = pipe(
+    messages,
+    max_new_tokens=2000,
+    return_full_text=False,
+    reasoning_effort="medium",
+)
+output[0]["generated_text"]
+Going one level lower, you can use Auto classes. For inference, you can use the AutoModelForMultimodalLM class for models and AutoProcessor class for processors. For different reasoning tasks, the tokenizer takes in a reasoning_effort argument. Existing options for reasoning effort are "none", "minimal", "low", "medium", "high", "xhigh", and "max".
+from transformers import AutoModelForMultimodalLM, AutoProcessor
+model_id = "thinkingmachines/Inkling"
+processor = AutoProcessor.from_pretrained(model_id)
+model = AutoModelForMultimodalLM.from_pretrained(
+    model_id,
+    dtype="auto",
+    device_map="auto",
+)
+messages = [
+    {"role": "system", "content": "You should only answer with a number."},
+    {"role": "user", "content": "What is 17 * 23?"},
+]
+inputs = processor.apply_chat_template(
+    messages,
+    add_generation_prompt=True,
+    tokenize=True,
+    return_dict=True,
+    return_tensors="pt",
+    reasoning_effort="high",
+).to(model.device)
+output = model.generate(**inputs, max_new_tokens=2000)
+generated_tokens = output[0][inputs["input_ids"].shape[1] :]
+print(processor.decode(generated_tokens, skip_special_tokens=False))
+For multimodal inference, you can use the same classes. We provide example snippets for each different modality in the model card.
+Text with image inference
+from transformers import AutoModelForMultimodalLM, AutoProcessor
+model_id = "thinkingmachines/Inkling"
+processor = AutoProcessor.from_pretrained(model_id)
+model = AutoModelForMultimodalLM.from_pretrained(
+    model_id,
+    dtype="auto",
+    device_map="auto",
+)
+image_url = (
+    "https://huggingface.co/datasets/merve/vl-test-suite/"
+    "resolve/main/pills.jpg"
+)
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "image": image_url,
+            },
+            {
+                "type": "text",
+                "text": "Do any of the components in this supplement interact?",
+            },
+        ],
+    },
+]
+inputs = processor.apply_chat_template(
+    messages,
+    tokenize=True,
+    add_generation_prompt=True,
+…（正文已截断）
