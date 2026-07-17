@@ -1,0 +1,42 @@
+NVIDIA Nemotron 3 Embed Ranks #1 Overall on RTEB, Advancing Agentic Retrieval
+Today, we are releasing NVIDIA Nemotron 3 Embed, a collection of open and commercially available embedding models designed to improve retrieval quality while giving developers practical deployment options for production-scale RAG, agentic retrieval, code retrieval, and agent memory.
+The collection includes three open models that achieve state-of-the-art retrieval across the accuracy-efficiency curve, led by an 8B model that tops the RTEB leaderboard and efficient 1B variants built for production-scale deployment:
+Table 1. Nemotron 3 Embed Model Usability and Deployment Matrix.
+Figure 1. RTEB Multilingual Leaderboard screenshot (July 15, 2026) showing Nemotron-3-Embed-8B-BF16 ranked as #1.
+Key Features
+Beyond the RTEB result, Nemotron 3 Embed introduces a production-ready feature set for enterprise retrieval deployments:
+- Open Weights, Datasets, and Recipes: Gives teams control to inspect, tune, fine-tune, and deploy retrieval models on their own infrastructure.
+- 32k Context Window: Supports retrieval over long documents, large code contexts, and multi-turn agent histories while reducing truncation.
+- Multilingual & Code Retrieval: Supports retrieval across global enterprise data, technical documentation and multi-file code repositories.
+- NVIDIA NVFP4 Efficiency: Provides a Blackwell-optimized 4-bit deployment path for high-throughput retrieval with a smaller memory footprint.
+- Fine-Tuning and Distillation Recipes: NVIDIA NeMo AutoModel recipes support domain adaptation and model compression for teams adapting retrieval models to their own data.
+- Day-0 Ecosystem Integration: Available immediately on Hugging Face, deployable as NVIDIA NIM microservice, supported by vLLM, and accessible through leading AI Cloud and inference partners.
+Evaluation: Retrieval Quality, Agentic Efficiency, and Deployment Tradeoffs
+We evaluate Nemotron 3 Embed across three dimensions: retrieval quality, downstream agentic efficiency, and deployment tradeoffs. The 8B model establishes the model collection’s quality ceiling, while the 1B BF16 and NVFP4 variants bring the same retrieval-focused design to lower-cost and higher-throughput deployment settings.
+RTEB Leadership and Strong Gains Across Retrieval Benchmarks
+We first evaluated the models on RTEB, where Nemotron-3-Embed-8B-BF16 ranks #1. We also tested these models across ViDoRe V3 Text, and MMTEB Retrieval and LongEmbed using average NDCG@10.
+Figure 2. Retrieval accuracy using average NDCG@10 across RTEB, ViDoRe V3 Text, MMTEB Retrieval and LongEmbed, comparing the Nemotron 3 Embed models with prior-generation Nemotron baselines.
+- Nemotron-3-Embed-8B-BF16 ranks #1 on RTEB, scoring 78.5% on RTEB and 75.5% on MMTEB Retrieval.
+- Nemotron-3-Embed-1B-BF16 brings much of the 8B model’s retrieval quality into a smaller deployment footprint. It scores 72.4% on RTEB, reducing error rate by 27% over its 1B predecessor (llama-nemotron-embed-vl-1b-v2), and scores 71.0% on MMTEB Retrieval, reducing error rate by 28%.
+Why Better Retrieval Matters for Agents
+To evaluate retrieval in an agentic setting, we use a search agent powered by Nemotron 3 Ultra and vary the embedding model used by the retrieval system. Better retrieval can return relevant evidence earlier, helping the agent avoid repeated searches, unnecessary reasoning turns, and extra context inspection. We compare average retrieval accuracy with estimated downstream agentic token cost per query across ViDoRe V3, BRIGHT, and BrowseComp-Plus.
+Figure 3. Average retrieval accuracy versus downstream agentic token cost per query across ViDoRe V3, BRIGHT, and BrowseComp-Plus.
+Evaluation note: The search agent uses Nemotron 3 Ultra. Downstream token cost is estimated from Nemotron 3 Ultra input/output token counts using the GPT-5.5 pricing formula.
+Figure 3 shows that stronger retrieval reduces downstream agentic token cost. More accurate retrievers return relevant evidence earlier, which helps agents complete tasks with fewer repeated searches and fewer reasoning turns. In these evaluations, the Nemotron 3 Embed models improve the agentic retrieval frontier, with the 8B model delivering both the highest average retrieval accuracy and the lowest estimated downstream token cost across ViDoRe V3, BRIGHT, and BrowseComp-Plus.
+Scaling Retrieval with NVFP4 on Blackwell
+For high-throughput deployments, teams often choose smaller embedding models to meet latency and cost targets. Nemotron-3-Embed-1B-NVFP4 is designed to narrow the gap between serving efficiency and retrieval quality by using native NVFP4 acceleration on NVIDIA Blackwell architectures. The model quantizes the weights and activations of linear layers to NVFP4 for efficient inference, and uses Quantization-Aware Distillation (QAD) to help recover accuracy for long input sequences.
+Figure 4. ViDoRe V3 retrieval accuracy versus serving efficiency, comparing Nemotron-3-Embed-1B-NVFP4 with selected smaller open embedding baselines, including Qwen3-Embedding-0.6B and EmbeddingGemma-300M.
+- Serving Efficiency: NVFP4 on Blackwell delivers up to 2x higher throughput than BF16 for high-throughput, low-latency retrieval serving.
+- Accuracy retention: The NVFP4 variant retains 99%+ of BF16 retrieval accuracy while reducing memory footprint.
+Day 0 Performant NIM
+For production-scale retrieval systems, the serving stack also needs to preserve that efficiency under real request loads, across different input sequence lengths and hardware targets. To make Nemotron 3 Embed performant at enterprise scale today, we are also releasing an optimized NVIDIA NIM microservice for the 1B model. As shown in Figure 5, the Rust-based Nemotron 3 Embed NIM matches or outperforms the vLLM checkpoint on NVIDIA GB200 and RTX PRO 6000 GPUs across ISLs of 256 & 1024.
+Figure 5. Nemotron 3 Embed NIM serving performance compared with the vLLM checkpoint on NVIDIA GB200 and RTX PRO 6000 GPUs.
+How We Built the Nemotron 3 Embed Models
+Nemotron-3-Embed-8B-BF16 adapts the Ministral-3-8B-Instruct-2512 backbone by converting its causal decoder into a bidirectional encoder for full-sequence retrieval. The model is trained with contrastive pre-training on a blend of web-sourced and synthetic text pairs, then fine-tuned on curated multilingual retrieval datasets across domains such as legal, finance, medical, business, and education. This 8B model serves as the flagship embedding model, while earlier 8B teacher checkpoints from the same development line were used to distill the efficient 1B variants.
+Scaling Down to 1B
+The 1B model is not a small retriever trained from scratch. We first applied the bidirectional adaptation recipe to the Ministral-3-3B-Instruct-2512 backbone to establish a 3B retriever base, then compressed it through two-rounds of structured pruning and distillation.
+First, the 3B parent model was compressed to a 2B intermediate footprint using NVIDIA ModelOpt’s mcore_minitron Neural Architecture Search engine. The NAS pipeline searched across hidden width, FFN size, attention heads, and depth under a strict parameter budget to identify an efficient architecture for retrieval workloads.
+The resulting 2B intermediate model was then distilled from an 8B teacher checkpoint to recover ranking accuracy. We used a combined cosine distance loss and mean squared error loss on a multilingual, in-domain retrieval data blend to align the student’s embeddings with the teacher.
+Figure 6. The pruning and distillation pipeline compresses the retriever from a 3B base to the final 1B production model.
+This same sequence, ModelOpt structured pruning followed by 8B teacher distillation, was repeated a second time to compress the 2B intermediate model down to the final 1.14B embedding model. Final training used a progressive two-stage context-scaling schedule:
+- Stage 1: Focused on broad multilingual alignment at 1024-token context length to reconstruct the core retrieval behavior of the pare…（正文已截断）
