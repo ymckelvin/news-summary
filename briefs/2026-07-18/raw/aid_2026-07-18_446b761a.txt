@@ -1,0 +1,84 @@
+Fine-tune video and image models at scale with NVIDIA NeMo Automodel and 🤗 Diffusers
+Diffusion models power some of the most exciting open-source releases of the last two years — such as FLUX.1-dev for text-to-image and Wan 2.1 and HunyuanVideo for text-to-video. The 🤗 Diffusers library has become the de facto home for these models, giving researchers and builders a single, consistent interface for inference, adaptation, and pipeline composition.
+In addition, training and fine-tuning diffusion models are also on the rise, requiring utilities that offer memory-efficient sharding, latent caching, multiresolution bucketing, and configurations that scale gracefully from one GPU to hundreds.
+To cater to these technical demands, we offer the NVIDIA NeMo Automodel open-source library. Today, we're highlighting the collaboration between NVIDIA and Hugging Face that brings production-grade, distributed diffusion training to any Diffusers-format model on the Hugging Face Hub — with no checkpoint conversion and no model rewrites for any new model. The integration is documented in the Diffusers training guide and is fully open source under Apache 2.0.
+Table of contents
+- What is NeMo Automodel?
+- Supported diffusion models
+- What this collaboration unlocks
+- A look at the fine-tuning workflow
+- Other Finetuned/LoRA examples
+- Try it today
+- Coming next: Pythonic recipe APIs
+- Resources
+What is NeMo Automodel?
+NeMo Automodel is an open-source PyTorch DTensor-native training library, part of the NVIDIA NeMo framework, built around two design principles that matter for the Diffusers ecosystem:
+- Hugging Face native. Point pretrained_model_name_or_pathat any Diffusers model ID on the Hub and start training. NeMo Automodel uses Diffusers model classes (e.g.WanTransformer3DModel) for loading and Diffusers pipelines (WanPipeline) for generation. Checkpoints round-trip cleanly back into the Diffusers ecosystem.
+- One program, any scale. The recipes and training scripts can be easily modified to suit training at any scale. Parallelism is a configuration choice, not a code rewrite — switch between FSDP2, tensor parallel, expert parallel, context parallel, and pipeline parallel by declaring configurations, not rewriting models.
+AutoModel currently supports flow-matching models only. Under the hood, it uses flow matching as the training objective, with latent-space training (via pre-encoded VAE outputs) and multiresolution bucketed dataloading to accelerate throughput.
+Supported diffusion models
+NeMo Automodel integration ships with ready-to-use fine-tuning recipes for the open diffusion models below. The list reflects the recipes currently in examples/diffusion/finetune.
+What this collaboration unlocks
+For Diffusers users, the practical gains break down into a few concrete capabilities.
+No checkpoint conversion. Pretrained weights from the Hub work out of the box. There's no separate "training format" to convert to, then convert back. Your fine-tuned checkpoint loads directly into a DiffusionPipeline for inference, or back to the Hub for sharing. Downstream tools — quantization, compilation, LoRA adapters, custom samplers — all keep working.
+Fast path to new model support. When a new diffusion model lands in Diffusers, enabling it in NeMo Automodel takes a small, contained code addition — a data preprocessing handler and a model adapter — rather than a full custom training script. The rest of the recipe stack (FSDP2, bucketed dataloading, checkpointing, generation) carries over unchanged, and the same YAML-driven workflow applies.
+Full and parameter-efficient fine-tuning. Both full fine-tuning and LoRA-style PEFT are supported, so you can choose between maximum quality (full FT on a large cluster) or maximum efficiency (LoRA on a single node). The same recipe structure handles both.
+Scalable training that goes beyond what built-in scripts offer. NeMo Automodel adds sharding schemes such as FSDP2, tensor, context, and pipeline parallelisms, multi-node orchestration (SLURM today, Kubernetes coming), and multiresolution bucketing. These capabilities make training larger models like FLUX.1-dev (12B) and HunyuanVideo (13B) possible.
+A look at the fine-tuning workflow
+In this section, we walk through the typical workflow for fine-tuning any of the supported models. The recommended way to install Automodel is the NeMo Automodel Docker container (nvcr.io/nvidia/nemo-automodel:26.06), which ships with PyTorch, TransformerEngine, and other CUDA-compiled dependencies pre-built. Alternatively, install with pip3 install nemo-automodel or from source (pip3 install git+https://github.com/NVIDIA-NeMo/Automodel.git); see the installation guide for all options.
+This guide walks through a full-transformer fine-tune of FLUX.1-dev on the 78-card Rider–Waite tarot dataset, then generating from the resulting checkpoint. It reuses the checked-in YAML configs and applies run-specific settings as command-line overrides, so no new config files are required.
+1. Pre-encode the dataset
+The diffusion recipe consumes cached VAE latents and text embeddings instead of encoding source images during every training step. Stream the 78 Rider–Waite images directly from Hugging Face and distribute preprocessing across all visible GPUs:
+uv run --locked --no-default-groups \
+  --extra diffusion \
+  --extra diffusion-media \
+python -m tools.diffusion.preprocessing_multiprocess image \
+  --dataset_name multimodalart/1920-raider-waite-tarot-public-domain \
+  --dataset_media_column image \
+  --dataset_caption_column caption \
+  --dataset_streaming \
+  --max_images 78 \
+  --output_dir /cache/flux_tarot \
+  --processor flux \
+  --model_name black-forest-labs/FLUX.1-dev \
+  --max_pixels 245760
+The captions already contain the trtcrd trigger token. With this pixel budget and the dataset's portrait aspect ratio, preprocessing assigns the samples to the 384×640 bucket used by the showcase run.
+For image training, preprocessing produces .pt cache files and sharded metadata:
+/cache/flux_tarot/
+├── 384x640/
+│   ├── <hash1>.pt
+│   └── ...
+├── metadata_shard_0000.json
+├── metadata.json
+└── _hf_dataset/
+    └── images/
+2. Launch training with the existing FLUX YAML
+Use examples/diffusion/finetune/flux_t2i_flow.yaml directly. The YAML already selects FLUX.1-dev, full transformer fine-tuning, the FLUX flow-matching adapter, an effective batch size of 32, and eight-way FSDP2.
+Supply the tarot-specific paths and settings as command-line overrides:
+uv run --locked --no-default-groups --extra diffusion \
+  torchrun --nproc-per-node=8 \
+  examples/diffusion/finetune/finetune.py \
+  -c examples/diffusion/finetune/flux_t2i_flow.yaml \
+  --model.transformer_engine_fp8 false \
+  --data.dataloader.cache_dir /cache/flux_tarot \
+  --data.dataloader.base_resolution '[384,640]' \
+  --lr_scheduler.lr_decay_style constant \
+  --lr_scheduler.lr_warmup_steps 20 \
+  --step_scheduler.max_steps 200 \
+  --step_scheduler.ckpt_every_steps 50 \
+  --checkpoint.checkpoint_dir /tmp/flux_tarot/checkpoints/full \
+  --checkpoint.save_consolidated true \
+  --seed 2026
+The run produces checkpoints at steps 50, 100, 150, and 200. The final checkpoint is labeled epoch_66_step_199; the label is zero-based even though it represents the completed 200th optimizer step.
+3. Generate from the fine-tuned checkpoint
+Use the existing FLUX generation YAML and point model.checkpoint at the complete training checkpoint:
+uv run --locked --no-default-groups --extra diffusion \
+  python examples/diffusion/generate/generate.py \
+  -c examples/diffusion/generate/configs/generate_flux.yaml \
+  --model.checkpoint /tmp/flux_tarot/checkpoints/full/epoch_66_step_199 \
+  --inference.height 640 \
+  --inference.width 384 \
+  --inference.prompts '["a trtcrd of an astronaut tending a rose garden on Mars, \"the gardener\""]' \
+  --output.output_dir /tmp/flux_tarot/generations/full/step_200 \
+  --seed 2026
+Include trtcrd to invoke the learned tarot style. For a control comparison, keep the see…（正文已截断）
