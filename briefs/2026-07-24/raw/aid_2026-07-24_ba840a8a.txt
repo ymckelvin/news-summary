@@ -1,0 +1,43 @@
+Introducing Cursor Router
+Today we're launching Cursor Router, our intelligent model router for teams and enterprises.
+Cursor Router lets teams automatically route every request to the most capable model for the task, delivering frontier intelligence at a lower cost.
+We've observed incredibly strong results on production traffic across thousands of enterprise developers. During our early access period with dozens of enterprises, customers got frontier performance at approximately 30–50% lower cost.
+In online A/B tests across millions of requests, Cursor Router delivered frontier-quality performance at 60% savings.
+Cursor routes hundreds of millions of coding requests each week across every model and provider, with unique visibility into what users like and what stays in the codebase. Model neutrality has always been core to how Cursor works, and today we're putting that data and expertise to work for your team.
+With Cursor Router, our goal is to provide teams with the best performance and experience for every task, without spending more than the work requires.
+How it works
+Roughly 60% of developers using Cursor pick a single model as their daily driver. This results in routine work being completed at frontier prices, and AI spend growing much faster than output quality. Cursor Router fixes that by classifying each request before a model runs.
+At its core, Cursor Router is a classifier that routes users to the best model option based on their query. We trained Cursor Router on 600k+ live requests and evaluated performance in an online A/B test across millions of live requests directed by Cursor Router, optimizing for user satisfaction (AFC) as a reward.
+Cursor Router analyzes each request on query, context, task complexity, and domain, combined with what we know about each model's behavior. We learn what each model is best at, and route to the most effective option. Simple work goes to the most price-efficient models, UI updates go to the model with the best taste, and more complex, long-horizon problems go to frontier reasoning models.
+We designed our routing classifier for a world in which updated models get shipped early and often. This way as newer and more powerful models are released, we can easily update Cursor Router, so the experience keeps improving.
+Cursor Router is cache-aware in both how it is trained and evaluated. It is trained on a dataset where routing results in cache misses, and evaluated in production where our reported cost savings include the cost of cache misses in routing decisions.
+Frontier intelligence at lower cost
+Cursor Router has three modes: Intelligence, Balance, and Cost which let you adjust where you are on the cost-intelligence Pareto frontier.
+We found that Auto Intelligence mode lands near Fable on user satisfaction of output at about 60% lower cost for teams, while also lifting satisfaction about 15% over Opus 4.8 at nearly the same cost.
+Similarly, Auto Balance lands above Opus 4.8 on user satisfaction with the results at about 36% lower cost. Against GPT-5.6 Sol, Auto Balance delivers comparable satisfaction at a lower spend rate.
+We chose to measure the efficacy of our router using large online A/B tests instead of offline evals. While offline evals are useful proxies for quality, they're limited by their small size, their distance from real-world usage, and the difficulty of reducing success to a rubric.
+Offline evals also omit the extra cache-miss cost that comes from switching models. Real routing happens across a conversation: which model to pick, and when to switch.
+Online A/B tests put Cursor Router to test in the real world across millions of tasks and conversations. Engineers write code, ask follow-ups, hit errors, and keep going, often across hundreds of requests in a week. Those are the conditions under which a model router needs to perform well.
+In terms of quality of output, we measured:
+- User satisfaction, classifying agent success based on user responses. Moving on to the next feature is a strong positive signal, while correcting the agent is a strong negative one.
+- Keep rate, or how much of the agent-generated code remains in the codebase over time.
+We have relied on these metrics to evaluate every model launch and harness improvement in the past nine months.
+What customers are seeing
+Over the past two weeks, Cursor Router has been in early access with a selection of enterprise customers. We compared what they actually paid against the same traffic, priced entirely at Opus 4.8 API rates.
+In early access, three high-volume accounts with thousands of users saved 30%–50% on Auto-routed requests versus routing everything to Opus 4.8, with no decrease in quality.
+Cost per request is only half the story. Engineering leaders care whether those savings show up in real shipped work, so we looked at cost per commit, and the pattern held.
+For a single commit, we observed Cursor Router had a lower cost per commit of $6.76 for Intelligence mode and $4.63 for Balance.
+GPT-5.6 Sol matched the cost of Intelligence but had lower user satisfaction with the output. Meanwhile, Fable 5 and Opus 4.8 produced commits at a cost premium to Cursor Router at $12.69 and $7.34 respectively.
+That gap is the practical case for routing. Cursor Router keeps hard tasks on the most capable models and moves routine work off of frontier pricing.
+You choose the tradeoff
+Cursor designed our router with teams and large organizations in mind. The router uses a data-driven taxonomy, while admins and end users can still choose where it sits on the cost-intelligence Pareto frontier.
+Select Auto mode in the model picker, and choose from three optimization modes that move you along the frontier:
+- Intelligence: Frontier quality, with performance matching the most expensive and powerful models that might be out of reach for daily use.
+- Balance: Strong quality, with performance matching the frontier models that most people like to daily drive.
+- Cost: Good quality, reaching the highest available intelligence while optimizing token spend.
+Admins can decide how Cursor Router rolls out across teams. You can enable it per team or group, choose which modes members can select, set the default, and allow or block specific models.
+What’s next
+Cursor Router is one piece of how Cursor drives token efficiency. Choosing the right model only matters if the agent itself stays lean, so we keep cutting waste in the harness around it.
+Dynamic tool calling is another clear example where most native tool descriptions are no longer loaded into every prompt. The model looks them up the first time it needs them, following the same pattern we already use for MCPs. This keeps common tools like read and edit hot while less commonly used tools only enter the prompt when the agent actually calls them.
+Alongside Cursor Router, we keep raising the floor and the ceiling of the model pool: Grok 4.5 widens what Cursor Router can draw from on harder, higher-cost work. Composer keeps getting better on the everyday path, so lower cost turns stay close to frontier quality without paying frontier prices.
+Cursor Router is available today for Teams and Enterprise plans across desktop, web, iOS, CLI, and our SDK.
