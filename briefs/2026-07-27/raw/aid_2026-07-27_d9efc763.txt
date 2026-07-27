@@ -1,0 +1,8 @@
+Grok 4.5 Model Card
+1 min read
+We're publishing the official model card for Grok 4.5.
+It documents the model's capability benchmarks and safety evaluations.
+We're publishing the official model card for Grok 4.5.
+It documents the model's capability benchmarks and safety evaluations.
+We're publishing the official model card for Grok 4.5.
+It documents the model's capability benchmarks and safety evaluations.
