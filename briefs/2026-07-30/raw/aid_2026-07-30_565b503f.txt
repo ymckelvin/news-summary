@@ -1,0 +1,1 @@
+TIL: Adding a custom MCP server to Claude and ChatGPT Connecting a custom MCP server to Claude and ChatGPT's standard chat interfaces is possible, but can take quite a few steps. Tags: ai , generative-ai , chatgpt , llms , claude , model-context-protocol
