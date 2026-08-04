@@ -1,0 +1,1 @@
+Set up a nightly cron job that executes the prompt: fetch upstream changes to the &lt;software&gt; and rebase all local changes on top of upstream. Check that the software works as intended and replace the current version. &mdash; David Crawshaw&#x27;s prompt , Devtools must be open source Tags: prompt-engineering , coding-agents , generative-ai , ai , llms , open-source
