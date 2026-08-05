@@ -1,0 +1,5 @@
+4th August 2026
+Recent articles
+- New release of LLM adds support for reasoning traces, OpenAI Responses, server-side tools, and smarter logging - 4th August 2026
+- Stateless MCP has recaptured my interest (and inspired mcp-explorer and datasette-mcp) - 31st July 2026
+- OpenAI’s accidental cyberattack against Hugging Face is science fiction that happened - 22nd July 2026
