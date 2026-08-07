@@ -1,0 +1,6 @@
+6th August 2026
+Back-ported the SQL Injection security fix from 1.0a38.
+Recent articles
+- One-shotting a Raccoon Heist game using Claude Fable 5 - 5th August 2026
+- New release of LLM adds support for reasoning traces, OpenAI Responses, server-side tools, and smarter logging - 4th August 2026
+- Stateless MCP has recaptured my interest (and inspired mcp-explorer and datasette-mcp) - 31st July 2026

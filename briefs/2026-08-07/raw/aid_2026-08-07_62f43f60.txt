@@ -1,0 +1,69 @@
+Deploy local agents everywhere with LFM2.5-2.6B
+- Best-in-class agent: Competitive with models 4x larger on tool use, instruction following, and multi-step agentic tasks.
+- Agentic reinforcement learning: Trained inside the most popular agentic harnesses to improve compatibility.
+- Efficient inference: 220 tok/s on an Apple M5 Max and 113 tok/s on an AMD Ryzen CPU, in under 2.5 GB of memory.
+How we built a reliable agentic model for edge devices
+LFM2.5-2.6B is pre-trained on ~34T tokens, with a mid-training phase that extends the context window to 128K. Post-training then turns the base model into an agent in four stages:
+- Supervised fine-tuning (SFT): two rounds of SFT, weighted heavily toward agentic data like tool use, web search, and harness trajectories.
+- Teacher specialization: train one specialist teacher per domain (math, code, tool use, and more).
+- Multi-domain on-policy distillation (MOPD): distill the specialist teachers into a single student.
+- Agentic Reinforcement Learning (Agentic RL): run multi-turn RL inside real agent harnesses, where the model learns to work across different tools, system prompts, and multi-turn task environments.
+The Agentic RL pipeline separates model optimization, inference, and environment execution into distinct components. The Training Engine optimizes the model, while the Rollout Engine generates actions using the latest policy. The RL framework orchestrates the training loop by launching rollouts, collecting trajectories and rewards, and updating the model.
+Actions are executed within a Sandbox Service, where the Blackbox Harness hosts the agent (e.g., OpenClaw or Hermes Agent) and coordinates interactions with the task environment. The Harness Proxy lets us treat agentic harnesses as black boxes with no modification, while transparently capturing the token-level trajectories needed to reconstruct and validate RL training samples.
+Benchmark results
+We evaluated LFM2.5-2.6B against models up to ~4x its size on STEM, instruction following, tool use, and agentic tasks. It is the smallest model in the group, yet it competes with and often beats the rest.
+For your app, the strengths are instruction following and tool use. LFM2.5-2.6B tops every instruction-following benchmark here, and every tool-use benchmark except BFCLv4, where only the 9.7B Qwen edges ahead. On agentic tasks, it beats both Gemma models and stays even with the Qwens. It also leads on knowledge and stays close on math. Coding is the one place the larger models keep a clear lead, so reach for something bigger there.
+Inference speed on CPU and GPU
+LFM2.5-2.6B ships with day-one support across the inference ecosystem, including llama.cpp, MLX, vLLM, SGLang, and ONNX.
+CPU inference. Due to its efficient LFM2 architecture, LFM2.5-2.6B is the fastest model we tested, with decode speeds of 220 tokens/s on an M5 Max and 113 tokens/s on a Ryzen AI Max+ 395. At 30 tokens/s, it allows you to run capable agents even on a phone.
+GPU inference. LFM2.5-2.6B is the fastest model in its size class, reaching almost 15K output tokens per second at high concurrency, roughly 1.3B tokens per day on a single H100.
+How to use LFM2.5-2.6B
+Reach for LFM2.5-2.6B when you need on-device agents for high-volume workloads.
+Install the latest version of transformers (compatible with transformers>=5.0.0):
+pip install -U transformers
+Then load and run the model:
+from transformers import AutoModelForCausalLM, AutoTokenizer
+model_id = "LiquidAI/LFM2.5-2.6B"
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    device_map="auto",
+    dtype="bfloat16",
+#   attn_implementation="flash_attention_2"  # uncomment on a compatible GPU
+)
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+prompt = "What is C. elegans?"
+input_ids = tokenizer.apply_chat_template(
+    [{"role": "user", "content": prompt}],
+    add_generation_prompt=True,
+    return_tensors="pt",
+    tokenize=True,
+).to(model.device)
+output = model.generate(
+    input_ids,
+    do_sample=True,
+    temperature=0.2,
+    top_k=80,
+    repetition_penalty=1.05,
+    max_new_tokens=512,
+)
+print(tokenizer.decode(output[0], skip_special_tokens=False))
+LFM2.5-2.6B demo
+Check out this browser demo of LFM2.5-2.6B powering a research agent. The agent helps you research specific questions and generates a summary.
+Get Started
+Both LFM2.5-2.6B and LFM2.5-2.6B-Base are available on Hugging Face today.
+With LFM2.5, we're delivering on our vision of AI that runs anywhere. These models are:
+- Download: LFM2.5-2.6B-Base and LFM2.5-2.6B on Hugging Face.
+- Try: run the WebGPU demo in your browser, no setup needed.
+- Use in your harness: follow our guide on how to run a local agent, like OpenClaw, Hermes Agent, and Pi.
+We can't wait to see what you build.
+Citation
+Please cite this article as:
+Liquid AI, "LFM2.5-2.6B: Deploy Agents Everywhere", Liquid AI Blog, Aug 2026.
+Or use the BibTeX citation:
+@article{liquidAI202626B,
+  author  = {Liquid AI},
+  title   = {LFM2.5-2.6B: Deploy Agents Everywhere},
+  journal = {Liquid AI Blog},
+  year    = {2026},
+  note    = {www.liquid.ai/blog/lfm2-5-2-6b},
+}
