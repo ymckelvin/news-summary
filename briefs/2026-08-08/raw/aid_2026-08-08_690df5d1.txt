@@ -1,0 +1,43 @@
+Mixture-of-Kittens: our open-source MoE megakernel for NVL72s
+We're open-sourcing Mixture-of-Kittens, a deterministic MoE training megakernel for NVL72s that fuses communication and computation into a single kernel.
+Today, we're open-sourcing Mixture-of-Kittens (MoK), our production MoE training megakernel for NVL72s.
+As we have scaled the training and inference of Composer, our agentic coding model, the mixture-of-experts layer has consistently remained the major bottleneck. Depending on the workload and training configuration, it can consume more than half of end-to-end training time.
+MoK addresses that bottleneck by fusing all MoE communication and computation into a single, fully deterministic kernel. It now powers Composer training across tens of thousands of GPUs.
+You can try MoK and explore the code on GitHub. We look forward to your feedback and contributions.
+MoK grew out of several earlier attempts to speed up the MoE layer. Over the past year, we wrote our own MXFP8 and NVFP4 training kernels and developed the "warp decode" approach for MoE inference.
+But those techniques optimized only the compute portion of the layer and assumed inter-GPU communication would be handled separately. In our production workloads, communication had become the limiting factor. That led us to redesign the full MoE layer from first principles, with communication built directly into the kernel.
+In addition, our move to GB300 NVL72s changed the problem in two important ways. First, an NVL72 is a multi-node rack within a single NVLink domain, enabling fast, fine-grained overlap of computation and communication across all 72 GPUs.
+Second, the integrated Grace CPUs (the "G" in GB300) tend to be slow relative to the GPUs. We found that GPU streams easily caught up to CPU-side work, causing the GPU to be completely idle during that time. So we have to aggressively minimize CPU work and CPU-GPU synchronization.
+Our solution to this set of challenges is Mixture-of-Kittens (MoK), a highly optimized MoE training megakernel built from first principles for NVL72s. MoK fuses all MoE communication and computation into a single kernel, is fully deterministic, and achieves state-of-the-art performance against publicly available implementations.
+In our production training stack across several NVL72 racks, MoK increased end-to-end tokens per second by 1.41x.
+The rest of this post explains the key ideas behind MoK, including how we chose the right communication direction, structured the overlap between computation and communication, and eliminated CPU-GPU synchronization with ring token buffers. We also cover the megakernel design, determinism, MXFP8 support, and several other implementation details.
+Overlapping computation and communication in MoE
+MoK targets DeepSeek-V3 (DSV3)-style MoE layers, which are widely used across open-weight models including GLM, Qwen, Kimi (up to K2.7), and DSV itself. These layers combine one shared expert with many routed experts, often hundreds.
+For each token entering the MoE layer, a router projection selects the top-k routed experts and assigns a router weight to each one. Each selected expert then runs the standard feed-forward network computation, consisting of up and gate projections, a SwiGLU activation, and a down projection. The layer combines the outputs of the shared and routed experts using the router weights.
+We use the following notation:
+- = model dimension
+- = expert intermediate dimension
+- = set of routed top-k experts
+- Input token
+- Router weights
+- Expert weights , ,
+And the MoE layer computes:
+where
+With expert parallelism (EP), we shard the routed experts and spread their weights across many GPUs, or ranks, and we call the number of ranks that collectively hold all expert weights the EP degree. For example, with 256 routed experts and an EP degree of 64, each rank holds 4 routed experts, plus the shared expert. As a result, tokens must be transferred across GPUs before and after the MoE layer, according to the router projection.
+The most straightforward implementation of distributed MoE sends each token to the ranks holding its assigned experts (dispatch all-to-all), runs the FFN, returns the results to each token's original rank (combine all-to-all), and takes a weighted sum of the expert outputs. But because the communication can take as long as the computation itself, running the two sequentially is inefficient.
+The standard remedy is to overlap dispatch/combine1 communication with per-expert FFN through pipelining: transfer one chunk of tokens, compute FFN on it while overlapping transfer of the next chunk, and repeat. MoK is one variant of this scheme, with a set of novel, target-specific techniques that make it faster than existing baselines.
+Choosing the right communication direction
+When sending tokens across GPUs, one can choose a push-based mechanism, where the GPU that owns the tokens actively stores them into the remote destination GPUs, or a pull-based mechanism, where the GPU that needs the tokens loads them from the remote source GPUs. Existing approaches often rely on push-based communication for scattering and gathering tokens across GPUs (e.g., DeepEP).
+The common notion is that pushing saturates inter-GPU links better, since it involves less protocol communication, and thus it becomes the default choice. Our observation, however, is that each mechanism has its own tradeoffs, and choosing the right one for each communication operator matters for maximizing performance, for the following three reasons.
+Scheduling
+To dispatch and combine tokens as fast as possible, the following conditions must hold:
+- All NVLink lanes interconnecting the 72 GPUs in the rack must stay saturated. We cannot afford stretches of time where tokens travel over only a subset of (source → destination) lanes, so tokens must be selected such that each source rank's sends are spread evenly across all destination ranks at any given moment.
+- Tokens sent to a rank should arrive ordered by that rank's local experts. If arrivals are unordered, the expert-grouped GEMMs wait longer for a full tile of tokens before the tensor core matrix multiplications can begin.
+- There should be zero local copies. Tokens for an expert should land directly in contiguous memory, so the grouped GEMMs can start without reordering anything locally.
+- The overhead of satisfying the above three conditions must stay minimal. We want to spend most of the time actually sending tokens, and very little time scheduling or searching for tokens to send.
+With push-based dispatch, we need to produce a schedule table with columns {src_index, dst_rank, dst_index}, where src_index is the index into the local incoming activation buffer and dst_index is the location in the destination rank's memory where the token must land. The row index of this table will decide the order in which tokens are sent over NVLink. We want the rows of this table to cycle through dst_rank round-robin, so that every connected lane stays busy.
+Among the rows targeting a given dst_rank, the dst_index values must be interleaved evenly across all source GPUs, and they must also follow increasing local expert order on that destination rank. Building this table involves multiple sorts, and each rank's schedule must account for every other rank's, since no two source ranks can write to the same dst_index.
+Push-based schedule: consecutive entries must interleave destination rank for full network saturation.
+Pull-based schedule: consecutive entries must interleave source rank for full network saturation.
+With pull-based dispatch, the schedule table simplifies to two columns, {src_rank, src_index}, and the row index of the table directly corresponds to the token index in the local destination buffer.
+In theory, the number of rows in the table and in the destination buffer would match (which would require large memory allocation; more on this in a later section). No sorting is needed here. We walk over the route…（正文已截断）
