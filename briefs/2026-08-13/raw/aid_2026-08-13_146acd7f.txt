@@ -1,0 +1,89 @@
+LFM2.5-VL-3B for Better and Faster Vision Capabilities for the Edge
+LFM2.5-VL-3B extends the vision-language capabilities of our previous releases with four major improvements:
+- Screen/UI understanding: Strong understanding of digital screens across different devices.
+- Grounding: Improved grounding and object detection with natural language queries.
+- Multi-image input: Improved reasoning across multiple images.
+- Function calling: Significantly stronger at function calling, in text-only and vision-text situations.
+How we trained our most capable vision-language model
+LFM2.5-VL-3B pairs a SigLIP2 400M NaFlex vision encoder with the same pre-trained backbone as our LFM2.5-2.6B text model. It is pre-trained on about 34T tokens, with 4x more vision data than before, drawn from curated and synthetic image-caption, OCR, grounding, and instruction-following sets. To support non-Latin scripts, we doubled the vocabulary to 128K by extending the tokenizer in place rather than retraining from scratch.
+Post-training runs in two stages: First is supervised fine-tuning (SFT), with knowledge distillation from a larger teacher and Antidoom training. Second is multi-reward reinforcement learning (RL).
+Benchmark results
+We evaluated LFM2.5-VL-3B across both vision and text benchmarks.
+The vision benchmarks cover multilingual visual comprehension, instruction following, visual math and scientific reasoning, document understanding, object detection, multi-image understanding, and screen understanding. LFM2.5-VL-3B leads its size class on real-world image tasks, while also reading digital content well, from documents and charts to on-screen UI elements.
+*All values in the table are normalized to 0–100. Evaluation is done using vLLM 0.26.0 and each model’s recommended generation parameters when available. Non-reasoning mode is used everywhere, and models are prompted to directly answer without reasoning.
+We also evaluated LFM2.5-VL-3B on text-only benchmarks for instruction following and tool use. Instruction following climbs across the board, and tool use improves sharply. On tool use, LFM2.5-VL-3B is on par with Gemma-4-E2B and Qwen3.5-2B.
+*InternVL 3.5 models do not support function-calling.
+These results demonstrate that LFM2.5-VL-3B is a strong, general-purpose vision-language model. It covers everyday tasks (captioning, visual question answering, document understanding) and is especially good at grounding objects, reading screens and documents, and calling tools.
+Inference speed on CPU and GPU
+LFM2.5-VL-3B ships with day-one support across the inference ecosystem, including llama.cpp, MLX, vLLM, SGLang, and ONNX.
+On-device inference. LFM2.5-VL-3B decodes 228 tokens/s on an M5 Max and 116 tokens/s on a Ryzen AI Max+ 395, and fits in about 3 GB of memory. It even reaches 20 tokens/s on a Galaxy S26 Ultra, so you can run it fully on-device.
+GPU inference. LFM2.5-VL-3B keeps latency consistently low and is the fastest on multi-frame inputs.
+LFM2.5-VL-3B is also the fastest on output throughput out of all models we tested, reaching about 11K tokens per second at high concurrency. That is roughly 2× the larger 4B-class models and ahead of even the smaller 2B-class models, which adds up to nearly 1B output tokens per day on a single H100.
+How to use LFM2.5-VL-3B
+Reach for LFM2.5-VL-3B when you need on-device intelligence for high-volume workloads.
+Install the latest version of transformers (compatible with transformers>=5.0.0):
+%pip install -q torch torchvision accelerate "transformers>=5.10.1"
+Then load and run the model:
+import torch
+from transformers.image_utils import load_image
+from transformers import AutoModelForImageTextToText, AutoProcessor
+from IPython.display import display
+MODEL_ID = "LiquidAI/LFM2.5-VL-3B" 
+processor = AutoProcessor.from_pretrained(MODEL_ID)
+model = AutoModelForImageTextToText.from_pretrained(
+    MODEL_ID,
+    device_map="auto",
+    dtype="bfloat16",
+)
+img_url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/coco_sample.png"
+input_image = load_image(img_url)
+display(input_image)
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {"type": "image", "image": input_image},
+            {"type": "text", "text": "Describe this image in two concise sentences."},
+        ],
+    }
+]
+inputs = processor.apply_chat_template(
+    messages,
+    add_generation_prompt=True,
+    tokenize=True,
+    return_dict=True,
+    return_tensors="pt",
+).to(model.device)
+with torch.inference_mode():
+    outputs = model.generate(
+        **inputs,
+        do_sample=True,
+        temperature=0.2,
+        top_k=50,
+        repetition_penalty=1.0,
+        max_new_tokens=256,
+    )
+output = processor.batch_decode(outputs[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)[0]
+print(output)
+Two cats are sleeping on a pink couch with two remote controls.
+You can find more hands-on examples on how to use LFM2.5-VL3B for multi-image inputs, grounding, OCR, tool calling, and more in our documentation. Check out our release blog for video examples.
+LFM2.5-VL-3B demo
+Check out this browser demo of LFM2.5-VL-3B powering a vision-capable chat interface. It allows you to take or upload multiple images and let the model interact with them, including grounding, OCR, and tool use.
+Get Started
+LFM2.5-VL-3B is available on Hugging Face today.
+With LFM2.5, we're delivering on our vision of AI that runs anywhere. These models are:
+- Download: LFM2.5-VL-3B on Hugging Face.
+- Try: run the WebGPU demo in your browser, no setup needed.
+- Fine-tune: adapt LFM2.5-VL-3B to your task with our fine-tuning tutorials.
+We can't wait to see what you build.
+Citation
+Please cite this article as:
+Liquid AI, "LFM2.5-VL-3B: A Better and Faster Vision-Language Model for the Edge", Liquid AI Blog, Aug 2026.
+Or use the BibTeX citation:
+@article{liquidAI2026VL3B,
+  author  = {Liquid AI},
+  title   = {LFM2.5-VL-3B: A Better and Faster Vision-Language Model for the Edge},
+  journal = {Liquid AI Blog},
+  year    = {2026},
+  note    = {www.liquid.ai/blog/lfm2-5-vl-3b},
+}
