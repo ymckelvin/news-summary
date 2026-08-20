@@ -1,0 +1,29 @@
+LFM2.5 Q4_0 Checkpoints from Quantization-Aware Distillation
+- Trained with Quantization-Aware Distillation (QAD): a high-precision teacher model is distilled into a quantized student model
+- Same memory and speed as native Q4_0: They keep the low memory footprint and high throughput of Q4_0 GGUFs
+- Recovery: 97% of their BF16 average accuracy lost to quantization is recovered
+Benchmark results
+For all four models, we compare their released GGUFs produced with post-training quantization (PTQ) against the trained QAD Q4_0 checkpoints on a benchmark suite spanning reasoning, instruction-following, tool use, and agentic capabilities: GPQA Diamond, MMLU-Pro, IFEval, IFBench, Multi-IF, and BFCLv4. The BF16 GGUF serves as the in-format ceiling. We also add one scale-appropriate math evaluation: GSM8K for LFM2.5-230M and LFM2.5-350M, and AIME25 for LFM2.5-1.2B-Instruct and LFM2.5-2.6B. We report the mean across five repeats.
+Across all four models, QAD substantially improves the Q4_0 checkpoint. The QAD checkpoints retain 97.1%, 96.5%, 97.4%, and 96.6% of their respective BF16 baseline performance.
+Speed and size on real edge hardware
+We measure decode throughput for the four models LFM2.5-230M, LFM2.5-350M, LFM2.5-1.2B-Instruct, and LFM2.5-2.6B across four targets: MacBook Pro, NucBox EVO-X2, Samsung Galaxy S26 Ultra, and Raspberry Pi 5. MacBook Pro and NucBox use GPU inference, while Samsung and Raspberry Pi use Arm CPU inference. BF16 and F16 are shown as full-precision references where profiled.
+The 230M and 350M QAD Q4_0 checkpoints match Q5_K_M quality within evaluation variance at a 4-33% higher decode throughput. The 1.2B and 2.6B QAD Q4_0 checkpoints match Q4_K_M quality at a 3-14% higher throughput. The QAD Q4_0 checkpoints also match Unsloth's UD-Q4_K_XL (where applicable, for the 230M and 1.2B), a strong external post-training quantization checkpoint.
+How to use QAD GGUFs
+Use the files with llama.cpp or any runtime that supports GGUF Q4_0 artifacts.
+llama-cli -hf LiquidAI/LFM2.5-350M \
+  --hf-file LFM2.5-350M-QAD-Q4_0.gguf \
+  -p "What is C. elegans?"
+Get Started with QAD GGUFs
+The QAD GGUFs are available on Hugging Face today: LFM2.5-230M, LFM2.5-350M, LFM2.5-1.2B-Instruct, and LFM2.5-2.6B.
+We can't wait to see what you build.
+Citation
+For citations, please use the following reference or BibTeX:
+Liquid AI, "LFM2.5 Q4_0: Quantization-Aware Distillation for Edge Deployment", Liquid AI Blog, Aug 2026.
+Or use the BibTeX citation
+@article{liquidAI2026Q40,
+  author = {Liquid AI},
+  title = {LFM2.5 Q4_0: Quantization-Aware Distillation for Edge Deployment},
+  journal = {Liquid AI Blog},
+  year = {2026},
+  note = {www.liquid.ai/blog/qad},
+}
