@@ -1,0 +1,57 @@
+Training and Finetuning Multi-Vector Embedding Models with Sentence Transformers
+MultiVectorEncoder, for ColBERT-style late interaction retrieval, alongside a complete training approach for it. In this blogpost, I'll show you how to use it to finetune a multi-vector model that outperforms general-purpose retrievers on your data. This method can also train strong new multi-vector models from scratch. Everything below runs on pip install -U "sentence-transformers[train]".
+Finetuning multi-vector models involves several components: the model itself, datasets, loss functions, training arguments, evaluators, and the trainer class. I'll have a look at each of these components, accompanied by practical examples of how they can be used for finetuning strong multi-vector models.
+Lastly, in the Evaluation section, I'll show you that my finetuned multi-vector-encoder/mLateOn-medical model, trained in 14.5 hours on a single RTX 3090 alongside this blogpost, easily outperforms every general-purpose retrieval model I could find on my medical retrieval evaluation: dense, sparse, lexical, and multi-vector alike.
+If you're interested in finetuning dense embedding models, sparse embedding models, or rerankers instead, then consider reading through my prior Training and Finetuning Embedding Models, Training and Finetuning Sparse Embedding Models, and Training and Finetuning Reranker Models blogposts.
+This blogpost is about training multi-vector models. If you want to learn how to use them, from loading and encoding to indexing in vector databases, see the companion Multi-Vector (Late Interaction) Embedding Models with Sentence Transformers blogpost.
+Table of Contents
+What are Multi-Vector models?
+A dense embedding model compresses a whole text into a single vector, and similarity is one dot product between two such summaries. A multi-vector model (also called a late-interaction or ColBERT-style model) skips that compression. It keeps one small vector per token and scores a query against a document with the MaxSim operator, where every query token finds its best-matching document token and the scores are summed. Token-level matching preserves exactly the fine-grained signals that a single vector has to average away, which usually means stronger retrieval, at the cost of a bigger index.
+The companion Multi-Vector Embedding Models blogpost covers the architecture, encoding, scoring, and indexing in detail, so I'll keep this section short and get to the training.
+Why Finetune?
+Finetuning multi-vector models significantly improves their retrieval performance on your specific domain: the vocabulary, the query style, and the notion of relevance all differ between web search, legal discovery, code search, and scientific literature review. Because queries and documents are matched token by token, multi-vector models pick up fine-grained domain signals that single-vector models tend to average away, and they respond very well to even modest amounts of in-domain finetuning data.
+Beyond that, most released retrieval models were configured for short passages. The classic ColBERT checkpoints truncate documents at 180 or 300 tokens, and many popular dense models at 256 or 512, because their MS MARCO-style training data rarely goes beyond that. If your documents are long, these models silently discard most of every document before scoring it. On my medical evaluation with passages averaging 941 tokens, I measured that this truncation costs up to 0.24 NDCG@10, considerably more than any difference between model architectures. When you train your own model, you configure the document length that your data needs.
+LightOn ran into this same dynamic with code retrieval, where general LateOn wasn't enough and they trained LateOn-Code. Your domain, whether that's medical, legal, financial, or your company's internal documents, is not getting an official model. This blogpost shows you how to build it yourself, in a matter of hours, on a single consumer GPU.
+Training Components
+Training MultiVectorEncoder models involves the following components:
+- Model: The model to finetune or the architecture to build fresh.
+- Dataset: The data used for training and evaluation.
+- Loss Function: A function that measures the model's performance and guides the optimization process.
+- Training Arguments (optional): Parameters that impact training performance, tracking, and debugging.
+- Evaluator (optional): A class for evaluating the model before, during, or after training.
+- Trainer: Brings together all training components.
+Let's take a closer look at each component.
+Model
+Multi-vector training gives you a real choice of starting point, and it matters more than you might expect.
+Finetuning an existing multi-vector model
+If you want to further finetune an existing multi-vector model, you don't have to worry about the architecture at all:
+from sentence_transformers import MultiVectorEncoder
+# Loading in fp32 is preferred for training if your memory can handle it
+model = MultiVectorEncoder(
+    "lightonai/mLateOn-unsupervised",
+    model_kwargs={"torch_dtype": "float32"},
+    processor_kwargs={"model_max_length": 8192},  # the tokenizer-level token limit
+)
+The checkpoint brings its own recipe along: its query and document marker tokens, its projection head, its scoring skiplist. For finetuning, you generally want to keep all of that and change only what your data demands. The first thing to check is the length configuration, since many released checkpoints cap documents at 180 to 512 tokens (see Why Finetune?), and my medical passages run to 1,400 tokens. The mLateOn family already serves the backbone's full 8192 token context, but if your starting checkpoint carries caps, lift them:
+# Let the model read full documents instead of the caps it was trained with,
+# e.g. GTE-ModernColBERT-v1 ships with query_length=48 and document_length=300
+model[0].query_length = None
+model[0].document_length = None
+With the per-task caps unset, truncation falls back to the tokenizer's model_max_length, which is why I configure that limit at load time above.
+I made one more change, adding a punctuation skiplist that excludes punctuation tokens from document-side scoring and storage. In a 4-way ablation (none, punctuation, stopwords, both) it modestly won on quality, and it shrinks the document index by 9.6% on this data for free:
+import string
+# model[2] is the MultiVectorMask module
+model[2].skiplist_words = list(string.punctuation)
+model[2].resolve_with_tokenizer(model.tokenizer)  # token ids are cached, so re-resolve after changing
+Building one from a base transformer
+You can also point MultiVectorEncoder at any base transformer, and a fresh, randomly initialized token-level projection is appended for you:
+from sentence_transformers import MultiVectorEncoder
+model = MultiVectorEncoder("answerdotai/ModernBERT-base", model_kwargs={"torch_dtype": "float32"})
+# MultiVectorEncoder(
+#   (0): Transformer({..., 'architecture': 'ModernBertModel'})
+#   (1): Dense({'in_features': 768, 'out_features': 128, 'bias': False, ...})
+#   (2): MultiVectorMask({'skiplist_words': [], 'skiplist_tasks': ['document'], ...})
+#   (3): Normalize({...})
+# )
+That's the classic ColBERT pipeline: a Transformer producing contextualized token embeddings, a token-level Dense projecting each of them down to 128 dimensions, a MultiVectorMask deciding which tokens count during scoring, and a token-level Normalize. The projection starts random, so training is required before this model is useful. Interestingly, this works with strong dense embedding backbones too. A fresh projection on Alibaba-NLP/gte-modernbert-base reached within 0.03 of the existing-checkpoint starting points in my experiments, from nothing but the projection and 25k training pairs.
+The classic ColBERT tokenization tricks ([MASK] query expansion, [Q] / [D] prefix tokens, a document length cap, a punctuation skiplist) are all off by default and configurable. See Creating Custom Models for the ful…（正文已截断）
