@@ -1,0 +1,129 @@
+Fine-tuning a 350M Model for Better Structured Outputs in 100 GRPO Steps
+Structured output is one of the most common real-world tasks for LLMs, yet most benchmarks fold it into broader reasoning or extraction scores rather than measuring it on its own. Whether a model reliably returns valid, parseable output in the requested format and shape — schema compliance — is often what decides whether it can be wired into a downstream system at all.
+Note that the training pipeline described here is not the one used to train the RL model described in the IFStruct blog. This notebook doesn't aim to recreate the IFStruct benchmark score, but to show how task-specific fine-tuning of smaller models can improve performance and match that of far larger models.
+Prerequisites
+This guide has two halves that run in different places:
+- Fine-tuning runs on a GPU. The accompanying notebook is sized for a free-tier Colab or Kaggle GPU.
+- Evaluation can run locally on a MacBook (here, a MacBook Pro with an Apple M5 Max and 36 GB of unified memory) through llama.cpp , which exposes an OpenAI-compatible server that the IFStruct evaluator talks to.
+We will need uv for the Python tooling and llama.cpp for serving. Following the Liquid AI llama.cpp deployment docs, install llama.cpp with Homebrew and verify that llama-server is available:
+brew install llama.cpp
+llama-server --version
+IFStruct Evaluation on LFM2.5-350M (Base model)
+Before we begin, let's evaluate LFM2.5-350M on the IFStruct benchmark and see whether we can reproduce the reported score of 21.1%.
+IFStruct is a benchmark for testing the validity of LLM outputs and schema adherence. The benchmark is open-source in Liquid4All/ifstruct, with the public benchmark dataset available on Hugging Face at LiquidAI/ifstruct-v1.0.
+git clone https://github.com/Liquid4All/ifstruct.git
+For the eval comparison, we serve the model locally on the MacBook with llama.cpp. We will use the BF16 GGUF (LiquidAI/LFM2.5-350M-GGUF).
+Then we start the base-model server with the following command:
+llama-server \
+  -hf LiquidAI/LFM2.5-350M-GGUF:BF16 \
+  -c 32768 \
+  -np 4 \
+  -ngl 99 \
+  --alias LiquidAI/LFM2.5-350M \
+  --host 127.0.0.1 \
+  --port 8080
+- --alias : model name IFStruct sends to the OpenAI-compatible endpoint
+- -ngl 99 : asksllama.cpp to offload all layers to the GPU when available
+- -np 4 : serves four requests in parallel
+- -c 32768 : size of the prompt context
+Once the server is running, we can run the full benchmark with 2000 samples:
+uv run ifstruct-eval \
+  --model LiquidAI/LFM2.5-350M \
+  --base-url http://localhost:8080/v1 \
+  --api-key dummy \
+  --dataset data/test.jsonl \
+  --results-file results/lfm2.5-350m-llamacpp-base.json \
+  --n-threads 4 \
+  --max-tokens 2048 \
+  -v
+============================================================
+Model: LiquidAI/LFM2.5-350M
+============================================================
+Overall: 452/2000 passed (22.6%)
+Average latency: 1453ms
+By format:
+  JSON: 180/1000 passed (18.0%)
+  YAML: 272/1000 passed (27.2%)
+By top-level structure:
+  Wrapper key 288/1011 passed (28.5%)
+  Bare list   164/989 passed (16.6%)
+By entity type:
+  test__camera_review                 6/83 passed (7.2%)
+  test__clinical_trial                20/104 passed (19.2%)
+  test__conference_schedule           7/87 passed (8.0%)
+  test__escaping__bug_report_batch    24/89 passed (27.0%)
+  test__escaping__config_snippet_audit 15/85 passed (17.6%)
+  test__escaping__customer_email_thread 5/73 passed (6.8%)
+  test__escaping__dialogue_sample     14/95 passed (14.7%)
+  test__escaping__interview_transcript_segment 21/80 passed (26.2%)
+  test__escaping__log_parser_examples 21/72 passed (29.2%)
+  test__escaping__pr_discussion       22/87 passed (25.3%)
+  test__escaping__repro_steps_batch   16/73 passed (21.9%)
+  test__escaping__screenplay_scene    16/92 passed (17.4%)
+  test__escaping__short_story_chapter 15/84 passed (17.9%)
+  test__escaping__support_ticket_batch 27/73 passed (37.0%)
+  test__escaping__terminal_session_notes 20/70 passed (28.6%)
+  test__event_ticket_booking          49/107 passed (45.8%)
+  test__gpu_review                    6/94 passed (6.4%)
+  test__invoice                       28/86 passed (32.6%)
+  test__job_posting                   25/85 passed (29.4%)
+  test__real_estate_listing           31/82 passed (37.8%)
+  test__recipe                        3/70 passed (4.3%)
+  test__rental_car_booking            27/79 passed (34.2%)
+  test__scientific_experiment         13/69 passed (18.8%)
+  test__travel_itinerary              21/81 passed (25.9%)
+Common errors:
+  7228x required field missing
+  738x wrong item count
+  540x type mismatch
+  317x Unclosed code block
+  190x extraneous field 'notes'
+  181x extraneous field 'path'
+  175x extraneous field 'constraints'
+  170x extraneous field 'type'
+  170x missing code block
+  100x expected bare list, got wrapper
+The IFStruct release blog reports 21.1% for LFM2.5-350M. Our local llama.cpp/BF16 setup measures 22.6%, close to the 21.1% reported in the IFStruct blog. We use this local result as the baseline for the same serving stack comparison.
+GRPO Fine-tuning with TRL on Structured Outputs
+The full, runnable pipeline lives in the accompanying notebook. We will cover only the relevant pieces in this section.
+Training data
+We use nvidia/Nemotron-RL-instruction_following-structured_outputs, which pairs each prompt with a target JSON Schema and an expected field count. We use about 500 samples for training.
+Because the Nemotron data distribution differs from the IFStruct evaluation, we augment the prompts to close two gaps between them:
+- 40% get a "return the output inside a fenced code block" instruction appended, so the model learns to follow the format instruction rather than always emitting raw JSON.
+- A disjoint 20% are converted into top-level-array tasks (the schema is wrapped in an array with a required item count), which trains bare-list output and item-count compliance.
+Model and LoRA
+We load LiquidAI/LFM2.5-350M and attach a LoRA adapter. Because LFM2.5 uses a hybrid attention/convolution architecture, we target the LFM-specific module names:
+lora_config = LoraConfig(
+    r=16, 
+    lora_alpha=32, 
+    bias="none", 
+    task_type="CAUSAL_LM",
+    target_modules=[
+        "q_proj", "k_proj", "v_proj", "out_proj", "in_proj",
+        "w1", "w2", "w3",
+    ],
+)
+This trains ~6M parameters, about 1.66% of the model.
+Reward functions
+Then we define three reward functions, each on a [0, 1] scale, which score every completion on whether the extracted structure is correct:
+- json_format_reward : Is the output parseable, and in the requested form? Full credit (1.0 ) for the requested form (fenced vs. raw),0.2 for the wrong-but-parseable form,0.0 for unparseable output.
+- field_count_reward : Does the object have the expected number of top-level fields? An exact match earns1.0 , and the score decays linearly with the miss.
+- schema_validation_reward : Does the output validate against the row's JSON Schema? It counts every constraint violation and gates partial credit on required-key coverage.
+We combine the three as a weighted sum with reward_weights=[1.0, 0.5, 2.0].
+Training
+We train for 100 steps with 8 generations per prompt group, sized for a free-tier 16 GB GPU:
+from trl import GRPOConfig
+training_args = GRPOConfig(
+    output_dir="./outputs/lfm25-350m-nemotron-schema-grpo",
+    learning_rate=5e-5,
+    max_steps=100,
+    warmup_steps=10,
+    num_generations=8,              # completions sampled per prompt group
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=8,  # 4 prompt groups per optimizer step
+    steps_per_generation=2,
+    max_completion_length=1024,     # room for nested JSON
+    mask_truncated_completions=False,
+    temperature=1.1,                # hotter sampling keeps groups varied
+    beta=0.01,                      # KL penalty toward the reference model
+    reward_weights=[1.0, 0.5, 2.0], # json_format, field_count, schema_validatio…（正文已截断）
