@@ -1,0 +1,7 @@
+7th September 2026
+- New OpenAI model:
+gpt-6-astra for GPT-6 Astra.
+Recent articles
+- The Pelican comparison grid for Astra is pretty interesting - 4th September 2026
+- OpenAI's rogue agents were caught communicating via public wikis - 4th September 2026
+- Claude's new system prompt really doesn't want to reproduce song lyrics - 2nd September 2026
