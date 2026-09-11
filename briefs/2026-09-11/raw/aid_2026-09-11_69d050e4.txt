@@ -1,0 +1,1 @@
+AlignmentSep 9, 2026An alignment assessment of recent cybersecurity incidentsWe present an alignment assessment of four incidents in which Claude models gained unauthorized access to real third-party systems.

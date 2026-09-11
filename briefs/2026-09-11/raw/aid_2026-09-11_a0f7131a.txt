@@ -1,0 +1,1 @@
+ScienceSep 4, 2026Formalizing Fermat's Last Theorem We are sharing the first complete computer-checked proof of Fermat’s Last Theorem. Claude worked largely autonomously over 11 days to write the proof in the Lean programming language.
