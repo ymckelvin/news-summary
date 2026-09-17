@@ -1,0 +1,1 @@
+Release: datasette 0.65.5 Security fix for an issue where a trailing newline in a requested table name could bypass table permissions and expose private rows, reported by dpfkdlemtp in GHSA-h547-rmjf-5m2m . Tags: security , datasette
