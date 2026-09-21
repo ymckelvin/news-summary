@@ -1,0 +1,1 @@
+Release: datasette-explain 0.2.2 Explain plans now work on read-only stored-query pages. I upgraded datasette.simonwillison.net to Datasette 1.0a40, which inspired me to ship a new version of this explain plugin. Tags: sqlite , datasette
