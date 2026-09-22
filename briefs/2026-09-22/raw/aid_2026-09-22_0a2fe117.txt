@@ -1,0 +1,47 @@
+How Basis builds long-horizon accounting agents with Cursor
+Basis was built on Cursor from day one. Its accounting agents complete partnership tax returns up to 6x faster, and are trusted by 40% of the top 25 accounting firms.
+Basis builds AI agents specifically for accountants. They autonomously complete long-horizon, complex accounting workflows in the background and return review-ready outputs, so accounting teams can focus on judgment and client service.
+These agents take on multi-hour, high-stakes work for leading accounting teams: month-end close, corporate and partnership tax returns, audit planning and fieldwork. Basis built the company on Cursor from day one. They treat the context the agent reads (prompts, skills, instructions, tool descriptions) with the same rigor as code, and Cursor is where they read and revise it.
+Work that cannot be reduced to a single prompt
+Long-horizon does not just mean the agent runs for several hours. It means hundreds of decisions across a trajectory, with later steps often depending on earlier ones. The system must preserve relevant state, incorporate the results of tool calls, and recover from failures, sometimes across more information than fits in a single context window. Errors can compound. An early mistake can affect later research, calculations, tool calls, and artifacts, while the final result may not reveal where the problem began.
+Accounting makes this harder for three reasons:
+- Many outcomes do not have a cheap, objective test.
+- Ground-truth examples drawn from real production work are expensive to create and difficult to scale.
+- A final outcome may take hours or days to produce and review.
+Even a correct final result can hide an unreliable process. An agent might reach the correct tax return without research authority, extract the correct number without preserving its source, or produce a usable workbook through a process that will not generalize. Outcome evaluation still matters, but it is expensive to run, and it cannot explain every consequential decision inside a long trajectory.
+Context is a production input
+The agent's final output is only one part of the system. Its behavior depends on the context it receives throughout the work: instructions, domain knowledge, examples, tool descriptions, skills, memory, and other runtime information. That context is written in natural language, so engineers have to read it.
+A traditional program interprets the same valid code the same way regardless of how neatly the files are organized. With language models, the organization and wording of context change what the model does next. A vague sentence, a buried exception, or a misleading example can change production behavior. Generating a context file and shipping it without reading it is a production risk.
+Behavior specs make the standard explicit
+A behavior spec is a Markdown file that defines recurring conduct expected from an agent in a specific situation. It is written for the people and judges reviewing a recorded trajectory. It is not a prompt, and it is not shown to the agent.
+A useful spec makes clear when the behavior applies, what evidence the agent should inspect, what decision it should make, what action should follow, what to do when evidence is incomplete, and what failure looks like. The goal is to make the behavior judgeable without scripting every step.
+The judge receives the spec, the observable trajectory, and the evidence (tool calls, artifacts, retrieved sources, decision records). It returns true, false, or NA. That lets the team evaluate selected parts of the process without a complete ground-truth answer for the whole task.
+Cursor is where they revise the agent
+Basis uses Cursor to build and refine its agents. An engineer has a behavior spec open in Markdown. They inspect a sentence, ask a model whether it is too vague or too brittle, revise the passage, and preview the finished document in the same window. They use the same environment to refine the prompts and context the agent actually sees: skills, instructions, tool descriptions.
+What makes Cursor the place for that work:
+- A real editor, so one can read and revise the wording of context and specs.
+- Markdown preview (edit and live preview together). Mitch Troyanovsky, cofounder of Basis, called this an underrated differentiator for iterating specs, skills, and other Markdown docs.
+- Working with a model directly, in the same environment as the text.
+- Easy model switching while you iterate.
+- Side-by-side: the file and the agent window as a loop. Everyone has an agent window. The difference is being able to inspect and change the context.
+Cursor is where we inspect the context that shapes the agent, and revise it until the behavior holds.
+The development loop
+Basis engineers write and refine behavior specs in Cursor. The agent runs in the Basis runtime, and a judge evaluates the recorded trajectory against the spec.
+- The team agrees on a recurring behavior worth measuring.
+- An engineer writes or refines the behavior spec in Cursor.
+- The agent performs its work in production, producing a recorded trajectory.
+- A judge evaluates each behavior against the spec, returning true, false, or NA.
+- A false verdict identifies a gap between the intended behavior and the runtime implementation.
+- The team updates the runtime context, tools, prompts, or execution framework. That wording gets revised in Cursor.
+- The team runs the agent again and measures whether the behavior improves.
+The spec and the runtime stay separate. The spec is the standard. The implementation changes until the agent meets it consistently.
+The behavior-spec approach grew from Basis's experience building production agents for accounting. Basis and Braintrust released it as an open standard so other teams can define and evaluate agent behavior using the same general format.
+A correct tax answer can still hide a bad process. I want to know if the agent checked primary authority, not just if the return is right. The spec is how we judge that.
+The work itself is the proof
+This is what that work looks like in production.
+- Basis agents perform 5+ hours of work on a single deliverable.
+- On a Form 1065 partnership return, work that can take roughly 30 to 40 hours of human time can be completed by a Basis agent in roughly 6 to 7 hours.
+- Basis is trusted by 40% of the top 25 firms, and by leading accounting firms more broadly.
+The strongest proof is the work itself: agents making many decisions over long trajectories, delivering work professional accountants review and use.
+As agents take on longer and more consequential work, their context becomes a production input. Engineers have to inspect it, understand it, and revise it.
+Cursor is where Basis maintains that context. Behavior specs make selected expectations explicit. Braintrust evaluates whether those behaviors appeared in real trajectories. Failures tell the team what to change in the runtime.
