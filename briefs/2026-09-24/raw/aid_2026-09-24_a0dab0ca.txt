@@ -1,0 +1,13 @@
+23rd September 2026
+    
+      Tool
+    
+    Shadow roots, explained with live examples
+    — Learn about shadow DOM through interactive examples that demonstrate style encapsulation, inheritance, slots, parts, and JavaScript access. Explore how shadow roots create isolated DOM trees with private stylesheets and elements that interact with the page DOM in specific, controlled ways.
+  
+Prompt to Fable 5.1 Medium:
+Build an artifact to explain shadow roots in CSS with interactive examples
+Recent articles
+- Claude Opus 5.5, GPT-6 Sol, GPT-6 Luna, and a new price war - 22nd September 2026
+- Jev introduces a new shape of LLM - System One, aka Decision Models - 21st September 2026
+- Generating running routes with GPT-6 Astra and ChatGPT Work - 12th September 2026
