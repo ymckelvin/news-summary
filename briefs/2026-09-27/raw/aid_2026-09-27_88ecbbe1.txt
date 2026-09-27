@@ -1,0 +1,6 @@
+24th September 2026
+Support for branches other than the default branch. Use uvx commit-rewriter --branch other to run against another branch. #3
+Recent articles
+- Claude Opus 5.5, GPT-6 Sol, GPT-6 Luna, and a new price war - 22nd September 2026
+- Jev introduces a new shape of LLM - System One, aka Decision Models - 21st September 2026
+- Generating running routes with GPT-6 Astra and ChatGPT Work - 12th September 2026
