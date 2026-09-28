@@ -1,0 +1,1 @@
+The Pulse is a series covering events, insights, and trends within Big Tech and startups. Today, we cover: Writing code by hand: is it over? In his Rails World keynote, David Heinemeier Hansson (DHH) declared the end for writing code by hand for professional work &#8211; at 37signals at least. Is this change now unstoppable? Amazon and Meta struggle to hire and &#8230; Read more
