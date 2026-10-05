@@ -1,0 +1,14 @@
+Starting today, you can now sign in to Devin with ChatGPT.
+If you have an eligible ChatGPT Plus or Pro plan, you can sign in to Devin with ChatGPT and use that plan for any OpenAI models usage in Devin. It works in Devin Cloud, Devin Desktop, and Devin CLI.
+Usage in Devin counts toward the Codex and ChatGPT Work usage already included in your plan. You can let Devin use all of it, or set a lower limit for Devin in your ChatGPT settings. If you reach that limit, your sessions keep running on your Devin usage until it resets.
+Devin Cloud
+OpenAI models are part of the model mix Devin Cloud uses in Lite, Normal, Ultra, and Fusion modes. Once you connect your ChatGPT account, your plan pays for the OpenAI-model share of each session while other models draw down from your included Devin quota. Devin also takes your connected plan into account when choosing models, leaning more on OpenAI models in the mix so that more of each session runs on the usage you already have.
+GPT models are particularly strong at computer use. Devin’s testing agent may use them when it opens your app in a browser and clicks through it to check its own work.
+You can also try GPT-6 Sol, available now in Devin Cloud as a research preview.
+Devin Desktop and CLI
+On your machine, you choose the model yourself. Pick any GPT model in Devin Desktop or Devin CLI, and the requests are billed to your ChatGPT plan.
+To make your plan go further, use Fusion with GPT-6 Astra as the lead and SWE-2 as the sidekick. The lead plans and reviews, and hands most of the implementation work to the free sidekick.
+As a result, Astra spends fewer tokens per task and your ChatGPT plan will last longer. The Artificial Analysis Coding Agent Index shows that using Fusion with Astra and SWE-2 is 39% less expensive than running a session with Astra alone.
+Get started
+Sign in to Devin with ChatGPT today, and try OpenAI models in Devin Cloud, Devin Desktop, or Devin CLI.
+Available on Devin Pro, Max, and Teams plans. For setup steps, eligible plans, and how billing works across modes, see the docs.
