@@ -1,0 +1,1 @@
+OpenAI released GPT-6.1 Sol. It is live now in Devin Desktop and Devin CLI. Same $2/$10 list price as GPT-6 Sol, but cache reads are now 95% off, and on FrontierCode 1.1 it matches GPT-6 Sol's score at roughly half the cost per task at every reasoning effort. At low effort it scores 58.1% for $0.21 per task, the best score of any model under $0.30.
