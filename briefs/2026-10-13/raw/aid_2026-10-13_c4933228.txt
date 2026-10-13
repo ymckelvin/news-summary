@@ -1,0 +1,2 @@
+On FrontierCode 1.1, our proprietary benchmark that grades models on real-world engineering tasks based on quality and mergeability, Haiku 5.5 scores 58.4%. That puts it ahead of Sonnet 5 at about an eighth of the cost per task.
+Claude Haiku 5.5 joins the sidekick lineup in Devin Fusion as an excellent option. With Haiku 5.5 as the sidekick, Fusion holds a top-tier FrontierCode score of 66.2 while cutting cost and latency. You can try it today in the Devin CLI with Opus 5.5 as the lead.
