@@ -1,0 +1,67 @@
+Gemini 4 Argon marks a step change in physical understanding, code generation, and visual-semantic reasoning—unlocking new workflows across the robotics stack and accelerating progress toward physical AGI.
+You can see this leap in capability on the Embodied Reasoning (ERQA) benchmark, which tests a model's ability to understand and solve physical, spatial problems in 3D environments. Using pure reasoning, Argon scores 87%, outperforming every other frontier model.
+As a general-purpose physical reasoning model, Argon can be applied across the entire robotics lifecycle. In this post, we share representative prompts for Argon across four key areas:
+Argon controls a Boston Dynamics Spot® quadruped (12-DoF legs + 6-DoF arm) to learn a new skill: stepping on a foot-pedal trash bin to throw away soda cans. Argon creates an articulated MuJoCo digital twin of a foot-pedal trash bin to practice its moves before stepping on the physical pedal and dropping soda cans into the open bin.
+Prompt:
+There's a Diet Coke can behind you and another on the black table on your left.
+Use the spot-mobile-manipulation skill to pick them up and trash them in the black foot-pedal bin.
+Before stepping down on the pedal, verify in the front cameras that your front-right foot target is centered on the pedal, and use a 2-agent verification swarm (foot-verifier and hand-verifier) to verify both the foot-pedal step and the 3D hand-in-bin alignment before releasing.
+Argon controls a simple robotic arm to place a fallen mug upright and put the crumpled napkin inside. Argon reasons with a visual coordinate harness and action primitives to perform this task over several turns.
+[Attached: wrist_cam.png, obs.json]
+Task: Get the robot arm to reorient the mug upright and put the napkin inside the mug.
+## Execution Discipline
+- Simply output 1 sentence observation followed immediately by your `curl` command (with `# Plan:` on Turn 1 and `# Thought:` on every turn). Everything needed is in `obs.json` and the calibrated reticle/grid drawn on `wrist_cam.png`.
+## Visual Coordinate Reference (Annotated on wrist_cam.png)
+- `+X` (UP in image): Away from robot base | `-X` (DOWN): Towards robot base
+- `+Y` (LEFT in image): World left         | `-Y` (RIGHT): World right
+- `+Z`: Height above table                | `Yellow numbers`: World (X, Y) in centimetres (2 cm grid at `grid_z`)
+- `Cyan + crosshair`: Current 3D pinch center
+- `Cyan [ + ] brackets`: Current jaw opening and closing line
+- `Green line`: Current object long-axis orientation (`yaw_deg`: 0° = vertical along +X, 90° = horizontal along +Y)
+- `pitch_deg = 90°`: Straight down (-Z) top-down grasp/place; `pitch_deg < 60°`: Tilted coaxial approach along finger axis
+## Closed-Loop Turn Workflow
+1. Inspect current state & view `wrist_cam.png`:
+   `curl -s http://127.0.0.1:8081/obs` (returns `ee_pos`, `holding`, `status`, `workspace`, `wrist_cam_path`).
+2. Select VLM call granularity upfront on Turn 1:
+   - Coarse (2–4 calls): `look_at` -> `grasp` -> `place` -> `done`
+   - Pre-Grasp Hover Verify (4–7 calls): `look_at` -> `goto(z=0.04)` (verify cyan `[ + ]` brackets straddle target) -> `grasp` -> `place_until_contact` -> `done`
+   - Fine Visual Servoing (8–20 calls): `look_at` -> `grasp` -> pre-pose `goto` -> closed-loop `move_by` / `move_until_contact` -> `done`
+3. Send motion primitives (`POST /plan`) and verify visually after every turn in the updated `wrist_cam.png`. If `status == "grasp_failed"`, call `robot.look_at(...)` to re-observe and recover closed-loop.
+## Code-as-Policies Primitives (`POST http://127.0.0.1:8081/plan`)
+robot.look_at(x=0.35, y=0.13, z=0.14, grid_z=0.015)
+x, y = robot.deproject(u=0.52, v=0.48, z_plane=0.015)
+robot.grasp(x=x, y=y, z=0.015, yaw_deg=-35, pitch_deg=90)
+robot.place(x=0.24, y=0.06, z=0.075)
+robot.place_until_contact(x=0.24, y=0.06, z=0.015, max_lag=0.012, relief=0.002)
+robot.goto(x=0.28, y=0.05, z=0.04, arc_z=0.14, pitch_deg=25, azimuth_deg=90, roll_deg=0, speed=0.10)
+robot.move_by(forward=0.025, dz=-0.002, dpitch_deg=-3, droll_deg=5, speed=0.04)
+robot.move_until_contact(dz=-0.06, speed=0.03, max_lag=0.012, relief=0.002)
+robot.open_gripper() / robot.close_gripper() / robot.home() / robot.done()
+Argon steers robots in the Gemini Omni World Model to rearrange five scattered Scrabble tiles (G, R, A, N, O) into a clean row spelling A - R - G - O - N. Instead of specifying one static prompt, Argon steers in a closed visual loop. It writes timestamped action prompts, inspecting intermediate rollout keyframes, and refining its prompts.
+Goal: {task_goal}
+You are steering a video world model (Gemini Omni) in an iterative visual feedback loop. Inspect the attached frames from the latest rollout and write the next timestamped action prompt for the video world model:
+- Break complex motions into one simple, single-direction action at a time.
+- Keep inactive hands retracted and avoid blocking the camera's view of objects in the workspace.
+- Explicitly state which areas of the workspace become empty after an object moves.
+- Use [MM:SS.mmm] timestamps for each action beat and wrap your output in <omni_prompt> tags.
+Example format (sample timestamps only, not the full prompt):
+<omni_prompt>
+[00:00.000] Character A's left hand rests at the side while the right hand reaches toward the target object.
+[00:02.500] Character A's right fingertips push the object smoothly into the center of the table, leaving its starting area empty.
+[00:05.000] Character A's right hand opens and retracts to the side so all placed objects remain in clear view of the camera.
+</omni_prompt>
+Argon views a real robot teleoperation episode and develops a digital twin; it obtains or creates simulation assets that look and behave like the real objects upon contact with the dexterous hands. Argon tunes the assets and scenes to match sim visuals and contact events with those in the real recorded data in an iterative visual-reasoning loop.
+[Attached: robot_rollout_episode]
+Build a MuJoCo scene of the robot and reconstructed task objects. When each episode is replayed frame by frame, by driving the robot joints toward the logged observation.state with joint-space PD.
+Iterate using two verification objectives:
+(1) Visual match: MuJoCo renders from the head_left, left_wrist, and right_wrist cameras line up with, and look like, those real observations.
+(2) Physical match: the simulated contact force/torque on each Sharpa fingertip, in the sensor frame, matches the logged tactile_force in timing, magnitude and direction.
+What you can tune happens before simulation starts:
+(1) Static object assets: realistic geometry, collision shapes, mass, inertia, friction and joints, with appearance close to the real objects, plus the initial object poses at t = 0.
+(2) Offline-planned robot commands, changed only in frames where the real fingertips are near an object. Each command must stay within 0.55 rad (arm joints) and 0.65 rad (hand joints) of the logged teleop trajectory. Everywhere else, replay the logged trajectory unchanged.
+No sim cheating: task objects may move only through real MuJoCo contact with the robot hands and the environment (mj_step).
+Not allowed after t = 0: changing MjModel parameters; applying external forces or torques to objects; welds or equality constraints; feedforward torques beyond joint-space PD; setting or rolling back object qpos/qvel; disabling or excluding collisions; reporting contact forces that don't come from the MuJoCo solver (for example, copying the logged tactile readings).
+Immediately present the reconstructed scene and rollout results as an interactive HTML session viewer with one page per episode, showing:
+- At the bottom: A synced timeline (play, scrub, speed control) that drives every panel.
+- On the left panel: An interactive 3D Blender scene showing the simulated robot and objects, showing contact points and force arrows as replay progresses.
+- On the right panel: Real vs. sim camera views side by side for all 3 cameras. Real vs.…（正文已截断）
