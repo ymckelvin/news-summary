@@ -1,0 +1,1 @@
+Gemini 4 Argon is now live in Devin Desktop and Devin CLI, at 75% off list price through October 27, 2026. On FrontierCode 1.1 it scores 60.5%, surpassing GPT-6.1 Sol and matching GPT-6 Sol, the highest score of any Gemini model on the leaderboard.
