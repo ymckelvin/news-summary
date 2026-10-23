@@ -1,0 +1,24 @@
+Build more responsive apps with the Decisions API
+Fast, focused, low-cost decisions for any application.
+Applications and agents make many small decisions throughout a workflow: how to classify an input, where to route a request, or which action to take next. Individually, they are simple. At scale, their latency and cost add up.
+Today, we’re making the Decisions API generally available. Built with GPT‑6 Luna, the Decisions API focuses Luna’s intelligence on questions with bounded answers, helping applications and agents make near real-time decisions from text, images, and structured inputs up to 10x faster than GPT‑6 Luna through the Responses API.
+Since public beta, we’ve added a native GPT‑Live integration, prompt caching for reused context, and inference residency in the US and EU. Developers can also pass native JSON inputs, include images in question instructions, and ask up to 400 questions per request, twice the previous limit. We’ve also continued to improve latency, including additional capacity in several regions in Asia.
+Early adoption of Decisions has shown its applicability across a variety of use cases.
+Across OpenAI, teams are applying the Decisions API across product and business workflows. The dots team is using it to reduce response times and improve interactivity. Our Personal Finance team is using it to categorize transaction descriptions, while our Communications team is using Decisions to classify coverage by the themes and scores whether it reinforces or challenges key narratives—helping identify what warrants closer review.
+These early examples show how fast, structured decision-making can turn incoming information into useful action across a wide range of use cases. Customers are applying the Decisions API just as broadly, from accurately attributing AI costs to making language-learning experiences more interactive.
+Using the Decisions API is simple: developers define a question and its allowed answers, then provide context as text, images, or native JSON. The API returns one of three supported answer types—a probability, choice, or score—that applications can use to determine what happens next. The variety of answer types allows Decisions to be applicable across a wide variety of use cases. 
+Decisions API supports three answer types:
+With GPT‑Live, you can bring natural, expressive conversation to your voice applications, with smooth interruption handling that keeps conversations flowing. Decisions API now integrates natively with GPT‑Live(opens in a new window), helping applications make fast, focused decisions during live conversations. A customer support agent can decide whether to ask a clarifying question, route a request, or escalate an issue. An avatar can adjust its facial expressions as a user speaks to it, and based on the user’s words, respond with a wink or a smile to create a more interactive experience.
+The example below uses transcript updates to select an avatar’s expression. Add this configuration to session.triggers in an existing GPT‑Live session.
+Live emits a decision.event; the application reads the selected reaction and animates the character accordingly. Learn more about connecting voice to Decisions API. (opens in a new window)
+Expression palette
+Live decisions
+Watch as the Decisions API chooses a facial expression based on what each of you says.
+Your words
+Watch the reaction as you speak.
+Assistant’s words
+Watch the face as the assistant replies.
+I rehearsed my audition for my cat. She walked out halfway through.
+Decisions API is generally available today with GPT‑6 Luna through the dedicated Decisions endpoint. See the pricing and availability guide(opens in a new window) for current rates and caching details.
+Start with one recurring decision your application makes often. Define the question, the possible answers, and the context needed to distinguish them. Test it on examples that reflect real usage, in the Decisions Playground(opens in a new window) with your own text or images, or follow the developer guide(opens in a new window) to make your first request.
+Decisions API costs $0.10 per million input tokens. Cached input costs $0.01 per million tokens. For 30-minute and 12-hour cached writes, read our pricing guide.(opens in a new window) You only pay for input tokens: there are no output-token charges. Regional processing is available in the US and EU, and Zero Data Retention(opens in a new window) is available to eligible customers. See pricing and caching(opens in a new window) and data controls (opens in a new window)for details.
