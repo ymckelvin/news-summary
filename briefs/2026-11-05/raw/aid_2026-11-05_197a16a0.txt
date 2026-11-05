@@ -1,0 +1,25 @@
+Today we’re introducing a new way for enterprises to manage AI spend: hierarchical budgets. Enterprise administrators can allocate ACU budgets to department leaders, who can then distribute and approve usage limits for sub-teams. Now, teams can align Devin usage with the way your company is organized: one centralized account limit, group budgets for business units, dedicated budgets for projects, and per-user limits inside each budget.
+Hierarchical budgets build on our work developing efficiency-based cost controls, to keep your most productive engineers unblocked while giving your team more visibility and granular control over AI spend.
+How it works: a tree of shared ACU pools
+Every enterprise has one Account budget at the root. Child budgets sit under it, up to three levels deep. A budget can hold one org or several, and each org belongs to exactly one budget.
+Each budget has:
+- a limit: the ACUs that the budget and everything under it can use in a monthly window
+- an optional temporary limit: a bump that lasts until the end of the current window
+- a parent budget: the limit is controlled by the parent administrator
+- its own user limits: tiers and per-user overrides that apply inside that budget
+- its own people: who can draw from it, adjust child limits, and share permissions with more people
+Here are two ways enterprises use them today.
+1. Departments with delegated administration
+Admins of large accounts get overwhelmed trying to micromanage individual user limits. Permissions on a budget let its owner delegate one layer down.
+Consider Acme Corp, an enterprise software team with 10 departments. Alice in Central IT sets each department’s total, while each department head manages the limits of their own orgs. This means department managers can make their own child budgets, set budget limits, and manage the tiers and limits of their users.
+Bob runs Engineering and can set limits on any budget under Engineering. Limit increase requests within Bob’s organization route to Bob. For a busy launch week, Bob might grant the Payments team a temporary limit increase of 5,000 ACUs, from 10,000 to 15,000 ACUs for the current window. Meanwhile, the engineering orgs underneath Bob are still bound by the combined limit of 30,000 ACUs, because Bob’s administration grant is granular. This means that each department head does not have visibility into other department budgets, so if Engineering needs more ACUs this month, Bob can file a request with Alice for a bump.
+2. A dedicated bucket for a sprint
+Every Acme developer gets a monthly ACU allowance. For a security hardening initiative, Acme sets aside a dedicated pool of ACUs, in which a small group of security engineers runs a swarm of Devin sessions to find and fix vulnerabilities across the codebase in parallel.
+Alice keeps the everyday orgs in a Developer tools budget with a 200-ACU default tier. She creates a Security hardening budget with a 5,000-ACU limit and gives it a more generous default tier with efficiency-based approvals.
+Carol is a developer with access to both budgets. She can use up to 1,000 ACUs in the Security hardening org, and up to 200 ACUs in the Developer tools orgs.
+- The hardening project has a budget ceiling. The whole initiative is limited to 5,000 ACUs.
+- Trackable spend. Carol has access to separate pools of spend, but to spend ACUs in the Security hardening budget, she has to actually be working on security hardening.
+Budgets let you set limits at the right level. Carol has 200 ACUs in her discretionary budget. This limit is intended to help accelerate her day-to-day work. She starts with 1,000 ACUs in the dedicated project budget, where the ACUs she spends can be directly attributed to project delivery, and her usage can be audited and graded based on efficiency.
+Get started
+We believe budgets are the best way to cap and understand total spend. For customers on a Devin Enterprise plan, you can use hierarchical budgets today: just read the Budgets docs and open Enterprise Settings > Usage Policies > Budgets.
+If your team is interested in getting started with hierarchical budgets in Devin, please contact us.
