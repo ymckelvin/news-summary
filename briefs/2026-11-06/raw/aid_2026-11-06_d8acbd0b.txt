@@ -1,0 +1,7 @@
+3rd November 2026
+A bugfix release for LLM, with contributions from Steven Huang, Tao An, Arjan Mossel, and XQ.
+Recent articles
+- Qwen 3.8 27B on my laptop can interpret model weights, too - 3rd November 2026
+- The U.S. Census Bureau and “Super Intelligence” - 2nd November 2026
+- The October inflection point for vibe game development - 28th October 2026
+- Battle Drones - a vibe coded RTS with audio-based multiplayer - 20th October 2026
