@@ -1,0 +1,120 @@
+Decision Models in Hugging Face
+Large Language Models (LLMs) are exceptionally good at generating text. We use them to answer questions, write code, reason about problems, and so much more. But not every problem requires generating text.
+Consider a customer support system receiving the following message:
+"I was charged twice for my subscription. I need a refund today."
+The system needs to determine which team should handle the request, how urgent it is, and whether the customer is requesting a refund.
+We could ask an LLM to return a JSON object containing these answers.
+llama cli -hf ggml-org/gemma-4-e4b-it-GGUF:Q4_0
+> We have the following customer support ticket, "I was charged twice for my subscription. I need a refund today.", which team should handle the request, how urgent it is, and whether the customer is requesting a refund. Give the answers in JSON.
+[Start thinking]
+...
+[end thinking]
+```json
+{
+  "team_to_handle": "Billing",
+  "urgency": "High",
+  "request_refund": true
+}
+But what if the model could directly evaluate the available options and return a probability distribution over them, without generating any text?
+from transformers import pipeline
+decide = pipeline("decision", model="autotrust/GEV-26B-Decide")
+decision = decide(
+    {
+        "state": "I was charged twice for my order and want a refund.",
+        "questions": {
+            "department": {
+                "type": "choice",
+                "instructions": "Which team should handle this?",
+                "criteria": {
+                    "billing": "Payments and refunds",
+                    "technical": "Bugs and technical issues",
+                    "sales": "Pricing and subscriptions"
+                }
+            },
+        }
+    }
+)
+# {
+#   'department': {
+#       'type': 'choice',
+#       'choice': 'billing',
+#       'confidence': 0.9974000453948975,
+#       'probabilities': {
+#         'billing': 0.9982666969299316,
+#         'technical': 0.0010246571619063616,
+#         'sales': 0.0007087149424478412
+#       }
+#     }
+# }
+This is the key idea behind decision models.
+What are decision models?
+A decision model takes some input context (state), evaluates a question with a set of predefined possible answers (primitives), and returns a structured decision along with probabilities. Instead of asking a model to generate an answer token by token, we ask it to assign probabilities to the answers that our application already understands.
+TypeSafe AI introduced Jev, describing it as a System One model. The name draws inspiration from the distinction between fast, intuitive thinking (System 1) and slower, deliberative thinking (System 2).
+The community has converged to the term decision model, because it describes the model's computational role rather than invoking a particular theory of cognition. In the rest of the post we will refer to the models as "decision models" instead of "system one models". (A poll on twitter deciding what we should be calling such models)
+For a decision model, the fundamental interface is:
+State + Questions + Allowed Answers → Decisions + Probabilities
+Why not use LLMs for everything?
+We could simply prompt an LLM to return a JSON object containing our decisions. In fact, this is how many applications already use language models for classification, routing, and other structured tasks.
+However, there are a few problems with this approach.
+- LLMs are not guaranteed to follow the requested schema: Even with explicit instructions, a model might produce invalid JSON, introduce unexpected keys, or return an answer outside the allowed choices.
+- Constrained decoding helps, but does not eliminate the computational overhead: Libraries such as Outlines and XGrammar can enforce grammars or JSON schemas by restricting which tokens the model is allowed to generate at each step. This ensures the output follows the supported structural constraints, but introduces additional work.
+- Why generate an entire response: LLMs are designed for open-ended generation, but when our application only needs to choose between predefined answers, autoregressive decoding can be unnecessary work.
+How are decision models different from classification models?
+Before understanding the interface of a decision model, it is useful to revisit two closely related approaches namely traditional classification and zero-shot classification.
+Traditional classification
+Suppose we train a classifier that routes customer-support requests to three departments:
+- Billing
+- Technical support
+- Sales
+A conventional classification model learns a mapping from an input to a predefined set of labels. During training, the model learns to predict these labels from examples. A classification head typically produces one logit per class, and softmax turns those logits into a probability distribution.
+The limitation here is that the output classes are baked into the model's classification head.
+If we introduce a fourth department, such as Legal, the existing classifier does not automatically acquire a corresponding output class. We may need to modify the head, collect training data, and retrain or adapt the model.
+Zero-shot classification
+Zero-shot classification addresses an important part of this limitation. Instead of requiring the classifier to be trained specifically on every output category, we supply the candidate labels at inference time.
+For example:
+from transformers import pipeline
+classifier = pipeline(
+    "zero-shot-classification",
+    model="facebook/bart-large-mnli",
+)
+classifier(
+    "My payment was deducted twice.",
+    candidate_labels=["billing", "technical support", "sales"],
+)
+# {'sequence': 'My payment was deducted twice.',
+#  'labels': ['billing', 'sales', 'technical support'],
+#  'scores': [0.8466812372207642, 0.0962134450674057, 0.05710534751415253]}
+Unlike a conventional fixed-label classifier, the categories can change from one request to another. Let’s add another department, such as “Legal”, and see the model outputs.
+from transformers import pipeline
+classifier = pipeline(
+    "zero-shot-classification",
+    model="facebook/bart-large-mnli",
+)
+classifier(
+    "My payment was deducted twice.",
+    candidate_labels=["billing", "technical support", "sales", "legal"],
+)
+# {'sequence': 'My payment was deducted twice.',
+#  'labels': ['billing', 'sales', 'technical support', 'legal'],
+#  'scores': [0.8185835480690002, 0.09302053600549698, 0.05521026626229286, 0.03318570926785469]}
+One common implementation uses a model trained for natural language inference (NLI). Each candidate label is converted into a hypothesis, and the model measures how strongly the input entails that hypothesis.
+This already sounds quite similar to a decision model. And in many ways, it is.
+Where decision models differ
+Decision models extend this idea beyond simply assigning an input to a category. A decision model can accept several named questions about the same state, with different answer types. The types can be choosing between alternatives (choice), scoring an ordered scale (score), or estimating the probability that a statement is true (noul).
+More importantly, its interface is designed around the probability distribution over possible decisions.
+Consider these three approaches:
+The advantage of decision models is not that they invented runtime-defined labels or probabilistic classification. It is that they organize these capabilities into a consistent interface, potentially backed by architectures and training procedures optimized specifically for decisions.
+The decision model interface
+A decision model request has the following two components:
+- state
+- questions
+State
+The state is the information the model should evaluate. It may be a string, a structured JSON object, or, other modalities for supported omni-modal models.
+For example:
+{
+  "customer_message": "I was charged twice. Please refund me today.",
+  "subscription": "pro",
+  "previous_tickets": 2
+}
+Questions and their primitives
+Questions descri…（正文已截断）
