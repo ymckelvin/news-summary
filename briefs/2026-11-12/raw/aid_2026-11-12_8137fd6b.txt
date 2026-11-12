@@ -1,0 +1,3 @@
+Claude Fable 5.2 is now live in Devin.
+On FrontierCode 2.0, our benchmark that evaluates models on real-world engineering tasks based on quality and mergeability, Fable 5.2 takes the top spot with a score of 49.1%. That’s a substantial step up from Fable 5.1’s 32.4%, and ahead of Opus 5.5’s 45.5%.
+The improvement isn’t limited to its highest score. At low reasoning effort, Fable 5.2 already surpasses Fable 5.1’s best result at less than a third of the cost per task.

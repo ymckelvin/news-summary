@@ -1,0 +1,8 @@
+Claude Mythos 5.2 is now available in Devin Security for eligible enterprise customers. If you do not have access yet, you can apply here.
+Devin runs managed scans with frontier cyber models, so your security team doesn’t need separate access to the models.
+Benchmark results
+We ran Mythos 5.2 on our internal cyber benchmark. It scored 73.5, up from 56.9 for Mythos 5.1 and more than double Claude Opus 5.5’s 32.7.
+The benchmark is a diverse set of 25 repos spanning different frameworks and languages, including C, Python, Go, PHP and TypeScript codebases built on Django, Flask, Laravel and Next.js. Each repo is pinned to a commit where publicly reported vulnerabilities are still present, 1,781 in total.
+This builds on our original security benchmark, which measured whether Devin Security found a single target bug. Because these repos have many known bugs at the pinned commit, we can now also measure precision and compute an F2 score.
+The score is based on how many of the known vulnerabilities the model finds (recall) and how many of the model’s findings are real (precision). F2 combines the two on a 0–100 scale, weighted toward recall. We ran each model 3 times on every repo and report the mean score.
+To help teams respond to the new threat landscape, Cognition is committing hundreds of millions of dollars in Devin credits. We’re offering current and future enterprise customers free scans with frontier cyber models, including Claude Mythos 5.2. Eligibility criteria and conditions apply. Apply for credits.
