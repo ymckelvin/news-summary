@@ -1,0 +1,17 @@
+We’re upgrading the Devin Teams plan. Everyone on your team can now use Devin Desktop, Free mode gives every user free sessions powered by SWE-2, and admins get SSO and cost controls.
+Devin Desktop for everyone
+You no longer need to pay for Devin Desktop seats — everyone on your team can use the new and improved Devin Desktop.
+Free SWE-2 sessions
+We’re giving Teams users free sessions with our new Free mode, powered by our own SWE-2. Every user gets 2 concurrent Free sessions and you can always pay for more. We’re also making free SWE-2 in Devin Desktop and CLI a permanent part of our Teams, Pro, and Max plans.
+SWE-2 is our most advanced coding model yet. It performs close to the frontier models at a fraction of their cost, and it gets to work faster by focusing on the parts of your codebase that matter for the task.
+More control for admins
+Single sign-on. Connect Okta, Microsoft Entra ID, or any other SAML or OIDC identity provider so your team signs in the same way they do everywhere else. Once SSO is connected, you can turn off email login.
+Cost controls. Set a usage limit for each user, with up to 3 tiers so different groups can have different limits. When someone needs more, they send a request, and you choose whether requests wait for an admin or are approved automatically up to a maximum you set. Devin Coach also gives engineers feedback on a prompt before they send it, such as suggesting a lighter mode for a small task.
+A standard BAA for Teams customers
+We’re offering a standard Business Associate Agreement (BAA) to Teams customers. Admins can request it from Settings in the product.
+If you’re building a healthcare startup, you know a BAA has to be signed before any vendor touches protected health information. Now you can get one on the Teams plan, without an enterprise contract.
+Devin scales with your startup
+Devin grows with your company, and we want to support startups from day one. Eligible teams can apply to our startup program for up to $65k in credits and more.
+What’s changing
+- We’re retiring quota seats on the Teams plan in 30 days.
+- Teams plans are now limited to 100 seats, down from 200.

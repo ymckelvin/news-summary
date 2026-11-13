@@ -1,0 +1,3 @@
+Gemini 4 Hydrogen is now live in Devin Desktop and Devin CLI.
+On FrontierCode 2.0, our benchmark that evaluates models on real-world engineering tasks based on quality and mergeability, Gemini 4 Hydrogen scores 38.2%. That’s within a point of GPT-6.1 Sol’s 39.0%, and close to Gemini 4 Carbon’s 40.0%.
+The bigger change is cost. Gemini 4 Hydrogen reaches that score at $2.40 per task, about 40% less than Gemini 4 Carbon’s $4.04, which brings Gemini closer to GPT-6.1 Sol’s cost efficiency. At medium reasoning effort, it already surpasses Gemini 4 Argon’s best result at less than a seventh of the cost per task.

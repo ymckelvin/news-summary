@@ -1,0 +1,53 @@
+The Definitive Fine-Tuning Guide for 3D Generation Models
+TLDR; In this blog, we provide fine-tuning scripts and containers to fine-tune TRELLIS.2, a popular 3D model on your 3D assets, that can run both locally and on Hugging Face Jobs. If you are interested in fine-tuning, you can use our scripts with few arguments (assuming you updated your dataset to Hugging Face Hub) or tinker with them yourself with this repository. If you want to learn more, we go through how the script works. Let’s go!
+Introduction
+3D generation has many uses in robotics, simulation, media, and entertainment. In these fields, it is difficult to make generated objects obey strict rules and standardize model and data representations. There are many file formats, such as GLB and PLY. There are also many representations, such as neural radiance fields (NeRFs) and 3D Gaussian splatting (3DGS). Each one has different advantages and disadvantages.
+TRELLIS introduced a common internal representation, called a unified latent representation. Its decoders convert this representation into 3D models in the required output format. Thus, you do not have to use different models for each representation format.
+The same team then released TRELLIS.2, which improves the model's representation of 3D structure. But neither model gives an easy way to adapt it to a specific task.
+What we want to improve
+A general-purpose model, such as TRELLIS.2, can make errors in details that are important for a specific application. For example, a user may need accurate geometry for furniture models. Without fine-tuning for that task, the pretrained model can produce geometry that is insufficiently accurate. We use a subset of GSO that has 188 footwear objects for our experiment. In our initial tests, the pretrained model usually produced shoes that looked correct, but the soles were incorrect. We test whether a LoRA can make the soles more accurate.
+Our goal is to use the Google Scanned Objects (GSO) dataset to improve the performance of TRELLIS.2 on a specific object category. We will explain which pipeline components to fine-tune and which to leave unchanged during training. The pipeline separates structure, detailed geometry, and materials. Thus, we will fine-tune only the components that are important for our task.
+Choosing what to freeze matters as much as choosing what to fine-tune.
+What will we use?
+LoRA
+LoRA, short for low-rank adaptation, fine-tunes a model by training small adapter matrices while keeping the original weights frozen. This reduces the number of trainable parameters and the memory needed for their gradients and optimizer state. We use Hugging Face’s PEFT library to add and train these adapters. For more information, read our LoRA guide.
+Hugging Face Jobs
+Hugging Face Jobs runs containerized workloads on cloud hardware. We use it for preprocessing and for training. To use your own GPU instead, see the local Docker commands below. Before you start, make sure that you have:
+- A HF_TOKEN that you can obtain from here
+- Your Hugging Face account must have access to DINOv3, because DINOv3 is a gated model
+- If you use your own dataset, upload its meshes to the Hub before you start.
+How TRELLIS.2 works
+Before we train, let’s look at how TRELLIS.2 generates a 3D object and where we’ll add LoRA adapters.
+TRELLIS.2 has five main stages: remove the image background, encode the image, predict the coarse structure, generate detailed geometry, and generate materials. The pipeline then exports the result as a textured mesh.
+Encoding the input image
+First, BiRefNet removes the background from the input image. DINOv3-L then encodes the image into feature tokens. The generation models use these tokens to guide the 3D object.
+Sparse Structure Generation (Sparse Structure Flow)
+The sparse-structure flow DiT predicts the object's coarse shape. It is a diffusion transformer (DiT) that makes a small latent of size 16³ × 8. A variational autoencoder (VAE) decoder then changes this latent into a 64 × 64 × 64 occupancy grid. Each voxel in the grid shows if that location is part of the object. A voxel is a pixel in three dimensions. We add LoRA adapters to this model because its output guides the geometry stage.
+O-Voxel and Structured Latents
+O-Voxel is the 3D format of TRELLIS.2. It is a sparse voxel grid. It keeps only the voxels on the object's surface. Each voxel keeps local geometry, such as a mesh vertex, and material attributes. Because the format is small, a CPU changes a mesh into O-Voxel in seconds. A GPU changes O-Voxel back into a mesh in seconds.
+Structured sparse latents come from TRELLIS. They keep 3D data in sparse tensors, which makes computation faster. The model uses only approximately 10% of the voxels in the grid, so it does not spend compute on empty voxels. Thus, the shape flow DiT and the texture flow DiT are sparse transformers. The sparse-structure flow DiT is a dense transformer.
+Geometry Generation (Shape Flow)
+The shape flow DiT uses the occupancy grid and the DINOv3 feature tokens to make a latent. Another VAE decoder then changes this latent into O-Voxel geometry at a resolution of 512 × 512 × 512.
+We add LoRA adapters to the DiT at this stage because it controls the object's shape.
+Material Generation + Mesh Creation
+In the last stage, the texture flow DiT uses the shape latent and the DINOv3 features as input. It defines the materials and textures of the geometry's surface. A VAE decoder then changes the latent into base color, metallic, roughness, and alpha values for each voxel. We do not add LoRA adapters to this stage. Our dataset has diffuse color maps, but it lacks the separate material maps this stage needs for training. Also, our problem is the shoe's shape. The base model already makes good colors and textures.
+Finally, the pipeline combines the geometry and material attributes into a textured mesh and exports it as a GLB file.
+Planning
+Which components to fine-tune
+We add LoRA adapters only to the sparse-structure flow DiT and the shape flow DiT. These DiTs control the object's shape and geometry. We freeze the texture flow DiT to keep its current capabilities.
+Our dataset contains diffuse color maps that include baked lighting effects. To train the texture flow DiT, we need separate material maps. The color maps in our dataset mix surface color with lighting. Thus, they are not correct targets for this training.
+If we train the texture flow DiT on these maps, it can learn to show lighting as a surface property. It can also forget what it learned before, a problem called catastrophic forgetting.
+Why use LoRA
+Our subset has 188 shoes from the 1,030 objects in GSO. For a dataset this small, LoRA is a better choice than full fine-tuning. Full fine-tuning costs much more. It can also overwrite what the model already does well (its learned priors). Our configuration trains approximately 9.3 million adapter parameters in total for both targeted DiTs. We use rank 8 adapters in the attention and feed-forward (MLP) layers of the sparse-structure flow DiT. We use rank 16 adapters in the attention layers of the shape flow DiT. The rank sets the size of the adapter matrices. A higher rank lets the adapter learn more.
+What you’ll run
+A 3D model setup can need many dependencies and installation steps. We supply two Docker images (that you can run on Jobs or your own machine) with the necessary software. One image is for preprocessing, and one is for fine-tuning.
+To train your LoRA adapters and upload them to the Hub:
+- Give the containers access to your data.
+- Set the parameters for your task.
+- Run the preprocessing container.
+- Run the fine-tuning container.
+Then we explain the fine-tuning script, its settings, and how each setting affects training.
+Experiment overview
+We’ll walk through three parts of the experiment:
+- Prepare the data. Convert GLB or OBJ meshes into the latent representations TRELLIS.2 uses for training, and render the input images.
+- Train the adapters. Run one …（正文已截断）
