@@ -1,0 +1,8 @@
+17th November 2026
+A little copying is better than a little dependency.
+— Go Proverbs, via
+Recent articles
+- Running the full server-side Datasette Python app in the browser with service workers and Pyodide - 17th November 2026
+- Locating the source of a mysterious beep with Claude - 9th November 2026
+- Hide your slop PR descriptions behind <details><summary> - 9th November 2026
+- Qwen 3.8 27B on my laptop can interpret model weights, too - 3rd November 2026

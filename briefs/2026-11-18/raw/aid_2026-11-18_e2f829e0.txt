@@ -1,0 +1,45 @@
+Today, we’re introducing Devin Bots: engineering teammates that own your goals and lead teams of Devins to deliver them.
+A coding agent can finish every task you give it while still leaving you responsible for moving the project forward. Someone has to identify the next problem, investigate possible solutions, and check whether the changes actually helped.
+We built Devin Bots to take on more of that responsibility. A Bot is a persistent agent with its own memory and tools that can lead multiple Devins in parallel. You can give it a large project or an ongoing goal. It investigates, delegates work, and evaluates the results to decide what to pursue next. It retains context across sessions and brings you only the decisions that need your judgment.
+You can ask a Devin Bot to maintain your open-source repo, keep Android at parity with iOS, manage your releases, or optimize server inference. A Devin Bot can own an outcome end-to-end.
+Putting Devin Bots to work
+Over the past few weeks, we’ve been putting Devin Bots to work at Cognition. Here are three of the responsibilities we’ve given them, and what working with them has looked like.
+1. Building Devin’s Android App
+Devin has an iOS app and a team of iOS engineers behind it. We had no Android engineers and no plan for Android. On September 28, 2026, Samyok, an engineer on the Bots team, created “Android Bot” and sent it this:
+your job is to product manage the android app. Basically, you’re going to autonomously create the entire thing, but we need to figure out what the blockers are for you doing that first
+The Bot began by surfacing blockers, like where the code would live, how to test an Android build, and how changes would merge. Samyok set the direction and constraints, and the Android Bot started building. It filed tickets, started a Devin session for each one, and merged the pull requests that passed CI and Devin Review. Each day, it posted a report in Slack with a screen recording of what had changed.
+- pull requests merged
+- 1,134
+- lines of Kotlin
+- 344,651
+- screenshot tests
+- 2,841
+- tickets closed
+- 1,217
+Over those 44 days Samyok sent the Bot 183 messages, about one for every six pull requests it merged. On 22 of the days he sent none. Most of Samyok’s messages addressed something the Bot needed a human decision on, like a PR that needed a security review. Other messages simply encouraged the Android Bot or set its direction, like “be more ambitious”.
+The app is now in open testing on Google Play, and the Android Bot owns the development process end-to-end. It updates the app every time a new feature lands on our iOS project, and addresses any issue we and our users catch in early beta testing.
+2. Keeping the Devin app from jumping
+The Devin web app loads different parts of a page through separate requests. When content arrives late, especially when streaming from the agent, it can move different elements on the screen. These layout shifts can be hard to catch in code review: they depend on request timing, connection speed, and whether you’ve visited the page before. Even after one shift is fixed, a new component or request can introduce another.
+We created the “Layout Bot” and gave it the responsibility for finding and fixing these shifts:
+your job is to keep the webapp’s UI from shifting or lagging. Watch #alerts-bots, where a layout check posts every 3 hours. Take over that check and keep it working as the UI changes. When something regresses, find the cause and open a fix with a before and after video.
+Every three hours, it builds the production version of the latest code on main and runs the full stack on its own machine. It simulates production loading conditions by recording first visits, repeat visits, and loads with individual requests deliberately delayed.
+When a previously passing check fails, the Bot can rerun it to rule out timing noise and trace the regression to the pull request that introduced it. It then starts a Devin session to investigate and open a fix, with before-and-after recordings for an engineer to review.
+One evening, the Bot traced a new layout shift to a PR merged two hours earlier. By the time someone asked about it, the Bot was already working on a fix. When an engineer asked who had requested another fix, it answered:
+Nobody asked. My scheduled layout check flagged main’s tall grey block on first visit because it doesn’t match what replaces it.
+At Cognition, we merge more than 2,000 PRs a week. The Bot owns keeping page loads and interactions smooth as the web app changes. In the three weeks it has been active, we have merged 159 pull requests from the Layout Bot, fixing shifts and cutting lag by 70%.
+3. Running a game studio 24/7
+Our colleague, Jenny Xu, runs a mobile game studio. We proposed a challenge - what if your game studio could run completely on Devin Bots?
+Today, Jenny is the studio’s only human employee, and has about 20 Bots, each of which owns one job end-to-end: development, Unity, releases, UI, iOS, Android, testing on real devices, and more. Above them is the Super Jenny Bot, and it is the only one she talks to. Four times a day, Super Jenny collects the decisions the other Bots need from her into one Slack thread, and she answers with emoji.
+The studio went from about 50 pull requests a week to 1,900, and it ships a release every week.
+Since her game studio now runs autonomously with Devin Bots, Jenny was able to join the team at Cognition full time.
+Give your Devin Bot a goal, not a backlog
+Until now, working with coding agents has meant delegating specific tasks. The agent handles the implementation, but the engineer is still responsible for coordination: noticing a problem, choosing an approach, writing the task, checking the result, and deciding what comes next.
+A Devin Bot takes on a responsibility or scope instead. You can see the difference in how the assignment is written:
+A task describes the change you want. A responsibility describes the outcome and leaves the Devin Bot to figure out how to achieve it. Samyok did not file the 1,217 tickets behind the Android app. He gave the Devin Bot the job, and the Bot decided what to build next, coming back to Samyok only for decisions that needed a human.
+This also means a Devin Bot can find work you would never have assigned. An agent that owns the goal watches everything that affects it, including the parts no one is looking at.
+We think this is the next change in how software gets built with AI. Engineers will spend less time specifying work and more time deciding what is worth owning, setting the bar for it, and building systems to track the metrics they care about.
+Engineering with Devin Bots
+Working with Devin Bots starts with defining what success means for the scope you give them. A Devin Bot responsible for making CI faster, for example, needs to know which checks must remain and whether spending more on compute is acceptable. Those decisions determine which improvements are worth pursuing.
+Additionally, a Devin Bot needs a way to evaluate its work, and engineers are responsible for building this feedback. In the lab, while building a product, that means tests, benchmarks, and running through user flows. In the wild, with real users, it means production behavior, usage, and customer feedback. Choosing what to measure, under which conditions, and what the results actually establish remains important engineering work.
+Engineers also define how independently a Devin Bot can act: which systems it can access, what it can change, and when spending or releases require approval.
+We built Devin Bots to support this way of working. Bots proactively share reports and test recordings, and use memory to adapt to how you prefer to review the evidence for their work. Decisions that need your input land in the Needs You inbox. You can open individual Devin sessions whenever you want to dig into a specific workstream. You can share your bots with your team to collaborate on challenging projects. As …（正文已截断）
