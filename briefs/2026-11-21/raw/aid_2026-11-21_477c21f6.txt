@@ -1,0 +1,20 @@
+AI is rapidly increasing the volume of new vulnerabilities discovered. Just this week, we saw two new sets of vulnerabilities in foundational software disclosed:
+- Java4Shell, published November 17, is a vulnerability in the Java runtime that can lead to memory disclosure and remote code execution.
+- NGINX2Root, published November 18, is a set of five memory-corruption bugs in nginx that can also lead to remote code execution.
+To make it easier for enterprises to respond to this growing volume, we’re launching Devin Security Threats: a managed index of new vulnerabilities disclosed, integrated with Devin for one-click scanning and remediation.
+How threats work
+A threat is a description of something that could go wrong in your systems: what is affected, how an attacker would use it, and what fixes it. Cognition publishes threats for major disclosures like these two, and your team can add its own.
+Scan with Devin opens a new scan with the threat already selected under Focus on threats. You can select the repositories that you would like Devin to scan. The repositories are scanned with the same Agentic MapReduce process as any Devin Security scan.
+Findings are then ranked against your threat model. Once the findings are found, you can assign the findings to Devin and it opens pull requests for your team to review. With Auto-triage on, you can pick the repositories and a minimum severity, and Devin scans them for each new threat as it is published. Optionally, a threat whose scan finds nothing is dismissed automatically.
+Threats are also not limited to what Cognition publishes. If a bug bounty report, a vendor notice or an incident review raises a question about your own code, create a threat with a title and a description of what could happen and how, and scan for it the same way.
+Getting started
+Both threats are live now at app.devin.ai/security.
+Learn more about Devin Security
+Fixing with skills
+If you would rather run the remediation as a Devin session than as a scan, our Vulnerability Fixes plugin now has a skill for each of these:
+- fix-nginx-vuln for the five NGINX2Root bugs.
+- fix-java-vuln for Java4Shell.
+Install the plugin from the Devin Marketplace, or from the Devin CLI:
+devin plugins install CognitionAI/devin-marketplace#plugins/devin-vuln-fixes
+Then start a session:
+The skills are plain Markdown and open source, so you can also read them as a checklist or give them to another coding agent.
