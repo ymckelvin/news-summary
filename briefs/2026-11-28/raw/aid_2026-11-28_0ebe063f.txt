@@ -1,0 +1,7 @@
+27th November 2026
+Fixed for compatibility with Datasette 1.0a44.
+Recent articles
+- Three LLM inflection points in twelve months - 24th November 2026
+- Ladybird's first alpha release - 23rd November 2026
+- Running the full server-side Datasette Python app in the browser with service workers and Pyodide - 17th November 2026
+- Locating the source of a mysterious beep with Claude - 9th November 2026

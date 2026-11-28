@@ -1,0 +1,34 @@
+An update on our recent security incident
+On October 29, we shared that we were investigating a security incident and a malicious, unauthorized copy of Anthropic's Claude Code extension that appeared in the Cursor VS Code extension marketplace. After an extensive investigation over the past two weeks, we want to share more context on the attack and the related impact.
+The vast majority of customers were not affected, and we have contacted each affected customer directly with the details that apply to them.
+Protecting the safety of our customers' data is a core priority we take seriously. This incident involved data we stored and shared, credentials we issued, and systems we operate. We are addressing the impacts and are enhancing our security measures based on what we have learned.
+What happened
+Our investigation has pieced together the following picture:
+- It started at Fireworks. An attacker obtained an access key we had issued to Fireworks. The key was exposed by Fireworks, and the attacker used it to copy data from a read-only storage bucket we used to share data with them. That bucket contained limited coding agent traces, mostly from 2025, from sessions not in Privacy Mode, which we were permitted to use for model training. A small number of those traces contained credentials that had not been redacted; less than 0.01% of customers had API credentials exposed. Starting with those credentials, the attacker reached select SaaS tools used by Cursor. From these tools they accessed select archived non-production Cursor source code repositories (some containing business contact information), limited customer support data and email conversations, product usage metrics and contact details, summaries of some coding agent conversations, and some credentials users had sent to the Cursor support team.
+- Our monitoring systems identified the unauthorized activity. After becoming aware of the unauthorized activity, we deactivated the vendor's key, opened an incident response workstream, and began revoking and rotating credentials and hunting for any further unauthorized access. As we identified further access, we cut it off. Out of an abundance of caution, we temporarily disabled internal and product services well beyond what the evidence required, which temporarily disrupted certain Cursor features. We restored each one once it was safe to do so.
+- The attacker published a malicious extension. On October 29, using a stolen credential from the exposed data from our internal system, the attacker placed malicious, unauthorized copies of Anthropic's Claude Code extension directly on the cache used to serve the Cursor VS Code extension marketplace. Anthropic did not publish this copy, and this was not a vulnerability in Anthropic's product. The marketplace source, Open VSX, never had the malware. At most 5,000 users who requested specific cached versions of the extension on October 29 potentially received the malicious build. It was available for approximately 11 hours before we removed it. We took it down, took the extension marketplace offline, and worked with the cloud service provider hosting the attacker's server to take it down.
+- We notified customers. On October 30, we published a security notice on our blog and on X with indicators of compromise, remediation steps and scripts to check your system, and began notifying affected users and team admins through in-app notices and email. If credentials were exposed, we emailed team admins a list of the specific keys to rotate, and asked the third-party services that issued those credentials to revoke them. If customer support or business data may have been involved, we notified customers directly. If customers installed or updated to tampered version Anthropic.claude-code 2.1.312 or 2.1.313 from the Cursor VS Code extension marketplace during the exposure window, we ask customers to follow the steps in our security notice. Uninstalling the extension alone may not be enough.
+- We believe the incident is contained. The last attacker activity we have seen was on November 1, and it was blocked. We continue to monitor our systems for anomalous activity and to strengthen our security controls. If we identify additional information that affects customers, we will contact them directly.
+What was not affected
+- Your prompts and code if you use Privacy Mode.
+  - For users not using Privacy Mode, coding agent traces were exposed for fewer than 0.05% of users. We have identified these users and notified each of them directly. If you did not receive a notification, your data was not in these traces.
+- Any data or live traffic you are sending to Cursor right now. The exposed trace data was limited to storage used for historical offline analysis.
+- The production systems and infrastructure that run Cursor.
+- The Cursor app and its official updates, and the code we ship both to the client and to our cloud services. We ship Cursor from a separate code hosting system that the attacker never accessed, and no release signing keys were exposed.
+- Our other products, including Cloud Agents for customer teams, Grok Bot, and all other SpaceX SI products.
+- Any other extension in our extension marketplace. We validated that all other extensions were authentic, and reviewed and rebuilt the marketplace store.
+- Active inference requests. These were not exposed, and we moved all inference away from the third-party training and inference vendor as a precaution.
+- Any plugins downloaded from the Cursor Marketplace.
+- Customer code repositories.
+What we've done
+- Moved all inference traffic off Fireworks, deactivated the key we had issued to it, and cut off its access to all data sets we shared with it.
+- Rotated every exposed Cursor credential we found, highest risk first, and as a precaution rotated all credentials in use across our internal systems, even where we had no evidence of exposure.
+- Validated that all other extensions in our marketplace were authentic, and reviewed and rebuilt our VS Code extension marketplace.
+- Expanded network access restrictions across our service providers, where possible, so compromised credentials can't be used outside their intended location.
+- Added secret scanning and protections across all our code repositories, and expanded scanning to other internal data sources.
+- Redeployed all production infrastructure and services as a precaution, and reviewed every internal service before restoring it.
+- Engaged external forensics experts to support our investigation.
+- Contacted everyone affected.
+What's next
+We apologize to those impacted by this incident — privacy and security is treated as a top priority, and we can and must do better. We're taking what we've learned and using it to make Cursor more secure. If anything important changes, we'll update this post.
+Questions? Email us at security@cursor.com.
